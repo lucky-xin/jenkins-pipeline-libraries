@@ -4,6 +4,8 @@ import xyz.dev.ops.notify.DingTalk
 def call(String robotId,
          String baseImage = "openjdk:17.0-slim",
          String buildImage = "maven:3.9.11-amazoncorretto-17",
+         String svcName = "",
+         String dockerRepository = "47.120.49.65:5001",
          String k8sServerUrl = "https://kubernetes.default.svc.cluster.local",
          String k8sDeployImage = "bitnami/kubectl:latest",
          String k8sDeployContainerArgs = "-u root:root --entrypoint \"\""
@@ -23,10 +25,13 @@ def call(String robotId,
             // Maven配置
             MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.m2:/root/.m2"
             K8S_DEPLOY_CONTAINER_ARGS = "$k8sDeployContainerArgs"
-            DOCKER_REPOSITORY = '47.120.49.65:5001' //镜像仓库地址
+            //镜像仓库地址
+            DOCKER_REPOSITORY = "$dockerRepository"
+            NAMESPACE = 'micro-svc-dev'
 
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             BRANCH = "$env.BRANCH_NAME"
+            // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
 
@@ -53,11 +58,16 @@ def call(String robotId,
                         script {
                             // 使用通用工具类获取 POM 信息
                             def mvnUtils = new MavenUtils(this)
-                            env.SERVICE_NAME = mvnUtils.readArtifactId()
+                            env.ARTIFACT_ID = mvnUtils.readArtifactId()
+                            if (!svcName.isEmpty()) {
+                                env.SERVICE_NAME = "$svcName"
+                            } else {
+                                env.SERVICE_NAME = "${env.ARTIFACT_ID}"
+                            }
                             env.VERSION = mvnUtils.readVersion()
                             env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
                             env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
-                            env.JAR_FILE = "${env.SERVICE_NAME}-${env.VERSION}.jar"
+                            env.JAR_FILE = "${env.ARTIFACT_ID}-${env.VERSION}.jar"
 
                             echo "服务名称: ${env.SERVICE_NAME}"
                             echo "版本: ${env.VERSION}"
@@ -100,6 +110,7 @@ def call(String robotId,
                         
                         docker buildx build \
                           --build-arg TZ=Asia/Shanghai \
+                          --build-arg BASE_IMAGE=${baseImage} \
                           --build-arg JAR_FILE=${env.JAR_FILE} \
                           --build-arg APPLICATION_NAME=${env.SERVICE_NAME} \
                           -t ${fullImageName}:$dockerTag \
@@ -141,7 +152,7 @@ def call(String robotId,
                                 def deployTemplate = readFile(encoding: "UTF-8", file: "deployment.tpl")
                                 def deployment = deployTemplate
                                         .replaceAll("\\{APP_NAME\\}", "${env.SERVICE_NAME}")
-                                        .replaceAll("\\{NAMESPACE\\}", "${NAMESPACE}")
+                                        .replaceAll("\\{NAMESPACE\\}", "${env.NAMESPACE}")
                                         .replaceAll("\\{DOCKER_REPOSITORY\\}", "${env.DOCKER_REPOSITORY}")
                                         .replaceAll("\\{IMAGE_NAME\\}", "${env.IMAGE_NAME}")
                                         .replaceAll("\\{VERSION\\}", "${env.VERSION}")

@@ -59,7 +59,7 @@ def call(String robotId,
                         sh '''
                         # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
                         mvn -s "$MAVEN_SETTINGS" -B -U -DskipTests clean package deploy
-                    '''
+                        '''
                     }
                 }
                 post {
