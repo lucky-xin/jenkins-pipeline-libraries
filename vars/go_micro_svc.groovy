@@ -209,10 +209,9 @@ def call(String robotId,
                     always { cleanWs() }
                 }
             }
-
-            post {
-                always { cleanWs() }
-            }
         } //pipeline
+        post {
+            always { cleanWs() }
+        }
     }
 }
