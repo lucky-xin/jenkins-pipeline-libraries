@@ -89,7 +89,7 @@ def call(String robotId,
                             done
                         '
                         
-                        go build -ldflags="-w -s" -o helloworld-server main.go
+                        go build -ldflags="-w -s" -o main main.go
                         
                         ls -la
 
