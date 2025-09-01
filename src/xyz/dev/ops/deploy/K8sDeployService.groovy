@@ -5,23 +5,23 @@ import xyz.dev.ops.notify.DingTalk
 class K8sDeployService implements Serializable {
     def script
     def dingTalk
-    
+
     K8sDeployService(script) {
         this.script = script
         this.dingTalk = new DingTalk()
     }
-    
-    def deploy(String robotId, 
-               String serviceName, 
-               String namespace, 
-               String dockerRepository, 
-               String imageName, 
-               String version, 
+
+    def deploy(String robotId,
+               String serviceName,
+               String namespace,
+               String dockerRepository,
+               String imageName,
+               String version,
                String k8sServerUrl = "https://kubernetes.default.svc.cluster.local",
                String k8sDeployImage = "bitnami/kubectl:latest",
                String k8sDeployContainerArgs = "-u root:root --entrypoint \"\"",
                String k8sDeploymentFileId = 'deployment-micro-svc-template') {
-        
+
         script.stage('k8s部署') {
             script.agent {
                 script.docker {
@@ -29,10 +29,10 @@ class K8sDeployService implements Serializable {
                     script.args k8sDeployContainerArgs
                 }
             }
-            
+
             script.steps {
                 script.withKubeConfig([credentialsId: "jenkins-k8s-config",
-                                      serverUrl: k8sServerUrl]) {
+                                       serverUrl    : k8sServerUrl]) {
                     // 使用 configFile 插件，创建 Kubernetes 部署文件 deployment.yaml
                     script.configFileProvider([script.configFile(
                             fileId: k8sDeploymentFileId,
@@ -57,7 +57,7 @@ class K8sDeployService implements Serializable {
                     }
                 }
             }
-            
+
             script.post {
                 //发布消息给团队中所有的人
                 script.failure {
@@ -69,13 +69,13 @@ class K8sDeployService implements Serializable {
                         )
                     }
                 }
-                script.success { 
-                    script.script { 
-                        dingTalk.post(robotId, serviceName) 
-                    } 
+                script.success {
+                    script.script {
+                        dingTalk.post(robotId, serviceName)
+                    }
                 }
-                script.always { 
-                    script.cleanWs() 
+                script.always {
+                    script.cleanWs()
                 }
             }
         }

@@ -78,26 +78,6 @@ def call(String robotId,
                         echo "=== Go 环境配置 ==="
                         go env GOPROXY GOSUMDB GOPRIVATE GONOSUMDB
                         echo "=================="
-
-                        # 拉取依赖并构建（校验可编译）
-                        # 设置超时和重试，避免网络问题
-                        timeout 300s bash -c '
-                            for i in {1..3}; do
-                                echo "尝试下载依赖 (第 $i 次)..."
-                                if go mod download; then
-                                    echo "依赖下载成功！"
-                                    break
-                                else
-                                    echo "依赖下载失败 (第 $i 次)"
-                                    if [ $i -eq 3 ]; then
-                                        echo "所有重试都失败了"
-                                        exit 1
-                                    fi
-                                    sleep 10
-                                fi
-                            done
-                        '
-                        
                         go build -ldflags="-w -s" -o main main.go
                         
                         ls -la
@@ -167,16 +147,16 @@ def call(String robotId,
             }
             script {
                 k8sDeployService.deploy(
-                    robotId,
-                    env.SERVICE_NAME,
-                    env.NAMESPACE,
-                    env.DOCKER_REPOSITORY,
-                    env.IMAGE_NAME,
-                    env.VERSION,
-                    k8sServerUrl,
-                    k8sDeployImage,
-                    env.K8S_DEPLOY_CONTAINER_ARGS,
-                    env.K8S_DEPLOYMENT_FILE_ID
+                        robotId,
+                        env.SERVICE_NAME,
+                        env.NAMESPACE,
+                        env.DOCKER_REPOSITORY,
+                        env.IMAGE_NAME,
+                        env.VERSION,
+                        k8sServerUrl,
+                        k8sDeployImage,
+                        env.K8S_DEPLOY_CONTAINER_ARGS,
+                        env.K8S_DEPLOYMENT_FILE_ID
                 )
             }
         } //pipeline
