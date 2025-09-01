@@ -87,6 +87,9 @@ def call(String robotId,
                             dockerTag = "v${env.DOCKER_TAG}"
                         }
                         sh """
+                        export DOCKER_BUILDKIT=1
+                        docker buildx ls
+                        
                         docker buildx build \
                           --build-arg TZ=Asia/Shanghai \
                           --build-arg JAR_FILE=${env.JAR_FILE} \
@@ -95,7 +98,7 @@ def call(String robotId,
                           --platform linux/amd64,linux/arm64 \
                           --push \
                           .
-                    """
+                        """
                     }
                 }
                 post {
