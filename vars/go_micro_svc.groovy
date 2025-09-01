@@ -64,8 +64,8 @@ def call(String robotId,
                         go env -w GOOS=linux 
                         go env -w GOARCH=arm64 
                         go env -w CGO_ENABLED=0 
-                        go env -w GOPRIVATE=${env.GITLAB_HOST}/* 
-                        go env -w GONOSUMDB=${env.GITLAB_HOST}/*
+                        go env -w GOPRIVATE="${env.GITLAB_HOST}"/* 
+                        go env -w GONOSUMDB="${env.GITLAB_HOST}"/*
                         
                         # 然后配置 Git 私仓凭据
                         git config --global url."https://${GIT_USERNAME}:${GIT_PASSWORD}@${env.GITLAB_HOST}/".insteadOf "https://${env.GITLAB_HOST}/"
