@@ -64,11 +64,11 @@ def call(String robotId,
                         go env -w GOOS=linux 
                         go env -w GOARCH=arm64 
                         go env -w CGO_ENABLED=0 
-                        go env -w GOPRIVATE="${env.GITLAB_HOST}"/* 
-                        go env -w GONOSUMDB="${env.GITLAB_HOST}"/*
+                        go env -w GOPRIVATE="${GITLAB_HOST}"/* 
+                        go env -w GONOSUMDB="${GITLAB_HOST}"/*
                         
                         # 然后配置 Git 私仓凭据
-                        git config --global url."https://${GIT_USERNAME}:${GIT_PASSWORD}@${env.GITLAB_HOST}/".insteadOf "https://${env.GITLAB_HOST}/"
+                        git config --global url."https://${GIT_USERNAME}:${GIT_PASSWORD}@${GITLAB_HOST}/".insteadOf "https://${GITLAB_HOST}/"
 
                         # 验证 Go 环境配置
                         echo "=== Go 环境配置 ==="
@@ -99,7 +99,7 @@ def call(String robotId,
                         ls -la
 
                         # 清理 git 临时凭据映射（避免后续泄露）
-                        git config --global --unset-all url."https://$GIT_USERNAME:$GIT_PASSWORD@${env.GITLAB_HOST}/".insteadOf || true
+                        git config --global --unset-all url."https://$GIT_USERNAME:$GIT_PASSWORD@${GITLAB_HOST}/".insteadOf || true
                     '''
                     }
                 }
