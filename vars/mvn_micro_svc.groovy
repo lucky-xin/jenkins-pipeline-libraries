@@ -1,3 +1,4 @@
+import xyz.dev.ops.maven.MavenUtils
 import xyz.dev.ops.notify.DingTalk
 
 def call(String robotId,
@@ -43,33 +44,33 @@ def call(String robotId,
                     echo "开始Maven构建..."
                     checkout scm
 
-                    script {
-                        // 通过 Maven help:evaluate 读取 POM 信息，避免依赖 Jenkins 插件
-                        env.SERVICE_NAME = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.artifactId').trim()
-                        env.VERSION = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.version').trim()
-                        env.PACKAGING = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.packaging').trim()
-                        if (!env.PACKAGING?.trim()) { env.PACKAGING = 'jar' }
-                        env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
-                        env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
-                        env.JAR_FILE = "${env.SERVICE_NAME}-${env.VERSION}.jar"
-
-                        echo "服务名称: ${env.SERVICE_NAME}"
-                        echo "版本: ${env.VERSION}"
-                        echo "JAR文件: ${env.JAR_FILE}"
-                    }
-
                     // Maven配置文件
                     configFileProvider([configFile(
                             fileId: '42697037-54bd-44a1-80c2-7a97d30f2266',
                             variable: 'MAVEN_SETTINGS'
                     )]) {
+
+                        script {
+                            // 使用通用工具类获取 POM 信息
+                            def mvnUtils = new MavenUtils(this)
+                            env.SERVICE_NAME = mvnUtils.readArtifactId()
+                            env.VERSION = mvnUtils.readVersion()
+                            env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
+                            env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
+                            env.JAR_FILE = "${env.SERVICE_NAME}-${env.VERSION}.jar"
+
+                            echo "服务名称: ${env.SERVICE_NAME}"
+                            echo "版本: ${env.VERSION}"
+                            echo "JAR文件: ${env.JAR_FILE}"
+                        }
+
                         sh '''
                         # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
                         mvn -s "$MAVEN_SETTINGS" package -DskipTests=true
 
                         # 验证JAR文件是否生成
                         ls -la target/*.jar
-                    '''
+                        '''
                     }
                 }
                 post {
