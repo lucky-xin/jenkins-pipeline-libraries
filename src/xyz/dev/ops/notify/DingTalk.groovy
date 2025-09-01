@@ -2,7 +2,7 @@ package xyz.dev.ops.notify
 
 
 def CreateMsg() {
-    MAX_MSG_LEN = 100
+    def MAX_MSG_LEN = 100
     def changeString = ""
     def changeLogSets = currentBuild.changeSets
     for (int i = 0; i < changeLogSets.size(); i++) {
@@ -11,8 +11,8 @@ def CreateMsg() {
             def entry = entries[j]
             def outputDateFormat = "MM-dd HH:mm"
             def outputTimeZone = TimeZone.getTimeZone("Asia/Shanghai")
-            truncated_msg = entry.msg.take(MAX_MSG_LEN)
-            commitTime = new Date(entry.timestamp).format(outputDateFormat, outputTimeZone)
+            def truncated_msg = entry.msg.take(MAX_MSG_LEN)
+            def commitTime = new Date(entry.timestamp).format(outputDateFormat, outputTimeZone)
             changeString += "> - ${truncated_msg} [${entry.author} ${commitTime}]\n"
         }
     }
