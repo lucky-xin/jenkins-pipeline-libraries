@@ -135,14 +135,14 @@ def call(String robotId,
                                 echo "✅ 使用 buildx 构建镜像..."
                                 docker buildx build \
                                   --platform linux/arm64/v8,linux/amd64 \
-                                  --tag ${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}:${env.VERSION} \
-                                  --build-arg ${env.PLATFORM}=linux/arm64/v8 \
+                                  --tag $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
+                                  --build-arg $PLATFORM=linux/arm64/v8 \
                                   --push \
                                   .
                             else
                                 echo "⚠️ buildx 不可用，使用传统构建方式..."
                                 docker build \
-                                  -t ${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}:${env.VERSION} \
+                                  -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
                                   .
                             fi
                         '''
