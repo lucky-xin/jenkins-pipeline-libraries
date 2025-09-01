@@ -4,7 +4,7 @@ import xyz.dev.ops.notify.DingTalk
 
 class K8sDeployService implements Serializable {
     def script
-    def dingTalk
+    DingTalk dingTalk
 
     K8sDeployService(script) {
         this.script = script
@@ -14,16 +14,16 @@ class K8sDeployService implements Serializable {
     def deploy(Map<String, Object> config) {
         // 设置默认值
         def params = [
-            robotId               : config.robotId ?: '',
-            serviceName           : config.serviceName ?: '',
-            namespace             : config.namespace ?: '',
-            dockerRepository      : config.dockerRepository ?: '',
-            imageName             : config.imageName ?: '',
-            version               : config.version ?: '',
-            k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
-            k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
-            k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\"",
-            k8sDeploymentFileId  : config.k8sDeploymentFileId ?: 'deployment-micro-svc-template'
+                robotId               : config.robotId ?: '',
+                serviceName           : config.serviceName ?: '',
+                namespace             : config.namespace ?: '',
+                dockerRepository      : config.dockerRepository ?: '',
+                imageName             : config.imageName ?: '',
+                version               : config.version ?: '',
+                k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
+                k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+                k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\"",
+                k8sDeploymentFileId   : config.k8sDeploymentFileId ?: 'deployment-micro-svc-template'
         ]
 
         script.stage('k8s部署') {
@@ -67,15 +67,18 @@ class K8sDeployService implements Serializable {
                 script.failure {
                     script.script {
                         dingTalk.post(
-                                params.robotId,
-                                params.serviceName,
+                                params.robotId as String,
+                                params.serviceName as String,
                                 "【k8s部署】失败！"
                         )
                     }
                 }
                 script.success {
                     script.script {
-                        dingTalk.post(params.robotId, params.serviceName)
+                        dingTalk.post(
+                                params.robotId as String,
+                                params.serviceName as String
+                        )
                     }
                 }
                 script.always {
