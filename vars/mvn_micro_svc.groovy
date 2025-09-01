@@ -1,5 +1,6 @@
 import xyz.dev.ops.maven.MavenUtils
 import xyz.dev.ops.notify.DingTalk
+import xyz.dev.ops.deploy.K8sDeployService
 
 def call(String robotId,
          String baseImage = "openjdk:17.0-slim",
@@ -12,6 +13,7 @@ def call(String robotId,
 ) {
 
     def dingTalk = new DingTalk()
+    def k8sDeployService = new K8sDeployService(this)
     pipeline {
         agent any
         options {
@@ -133,54 +135,19 @@ def call(String robotId,
                     }
                 }
             }
-            stage('k8s部署') {
-                agent {
-                    docker {
-                        image "$k8sDeployImage"
-                        args "${env.K8S_DEPLOY_CONTAINER_ARGS}"
-                    }
-                }
-                steps {
-                    withKubeConfig([credentialsId: "jenkins-k8s-config",
-                                    serverUrl    : "$k8sServerUrl"]) {
-                        // 使用 configFile 插件，创建 Kubernetes 部署文件 deployment.yaml
-                        configFileProvider([configFile(
-                                fileId: "${env.K8S_DEPLOYMENT_FILE_ID}",
-                                targetLocation: "deployment.tpl")
-                        ]) {
-                            script {
-                                sh "cat deployment.tpl"
-                                def deployTemplate = readFile(encoding: "UTF-8", file: "deployment.tpl")
-                                def deployment = deployTemplate
-                                        .replaceAll("\\{APP_NAME\\}", "${env.SERVICE_NAME}")
-                                        .replaceAll("\\{NAMESPACE\\}", "${env.NAMESPACE}")
-                                        .replaceAll("\\{DOCKER_REPOSITORY\\}", "${env.DOCKER_REPOSITORY}")
-                                        .replaceAll("\\{IMAGE_NAME\\}", "${env.IMAGE_NAME}")
-                                        .replaceAll("\\{VERSION\\}", "${env.VERSION}")
-                                writeFile(encoding: 'UTF-8', file: './deploy.yaml', text: "${deployment}")
-                            }
-
-                            // 输出新创建的部署 yaml 文件内容
-                            sh "cat deploy.yaml"
-                            // 执行 Kuberctl 命令进行部署操作
-                            sh "kubectl apply -n ${NAMESPACE} -f deploy.yaml"
-                        }
-                    }
-                }
-                post {
-                    //发布消息给团队中所有的人
-                    failure {
-                        script {
-                            dingTalk.post(
-                                    "${robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【k8s部署】失败！"
-                            )
-                        }
-                    }
-                    success { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
-                    always { cleanWs() }
-                }
+            script {
+                k8sDeployService.deploy(
+                    robotId,
+                    env.SERVICE_NAME,
+                    env.NAMESPACE,
+                    env.DOCKER_REPOSITORY,
+                    env.IMAGE_NAME,
+                    env.VERSION,
+                    k8sServerUrl,
+                    k8sDeployImage,
+                    env.K8S_DEPLOY_CONTAINER_ARGS,
+                    env.K8S_DEPLOYMENT_FILE_ID
+                )
             }
         } //stages
 
