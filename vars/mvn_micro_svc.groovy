@@ -44,12 +44,12 @@ def call(String robotId,
                     checkout scm
 
                     script {
-                        // 读取Maven POM信息
-                        def pom = readMavenPom()
-                        env.SERVICE_NAME = pom.getArtifactId()  //服务名称
+                        // 通过 Maven help:evaluate 读取 POM 信息，避免依赖 Jenkins 插件
+                        env.SERVICE_NAME = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.artifactId').trim()
+                        env.VERSION = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.version').trim()
+                        env.PACKAGING = sh(returnStdout: true, script: 'mvn -q -DforceStdout help:evaluate -Dexpression=project.packaging').trim()
+                        if (!env.PACKAGING?.trim()) { env.PACKAGING = 'jar' }
                         env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
-                        env.VERSION = pom.getVersion()  //版本
-                        env.PACKAGING = pom.getPackaging() //文件后缀
                         env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
                         env.JAR_FILE = "${env.SERVICE_NAME}-${env.VERSION}.jar"
 
