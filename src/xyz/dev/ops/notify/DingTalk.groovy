@@ -22,7 +22,7 @@ def CreateMsg() {
     return changeString
 }
 
-def post(String robotID, String jobName) {
+def post(String robotID, String jobName, String reason = "") {
     def changeString = CreateMsg()
     dingtalk(
             robot: robotID,
@@ -33,6 +33,7 @@ def post(String robotID, String jobName) {
                     "------",
                     "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
                     "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>", //
+                    reason.isEmpty() ? "" : "- 原因：" + reason,
                     "- 执行：${currentBuild.buildCauses.shortDescription}",
                     "- 日志：[点击查看详情](${env.BUILD_URL}console)",
                     "### 更新记录:",

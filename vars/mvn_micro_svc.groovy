@@ -74,7 +74,15 @@ def call(String robotId,
                     }
                 }
                 post {
-                    failure { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【Maven构建 & 代码审核】失败！"
+                            )
+                        }
+                    }
                 }
             }
             stage('封装Docker镜像') {
@@ -102,7 +110,15 @@ def call(String robotId,
                     }
                 }
                 post {
-                    failure { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【封装Docker镜像】失败！"
+                            )
+                        }
+                    }
                 }
             }
             stage('k8s发布') {
@@ -141,8 +157,16 @@ def call(String robotId,
                 }
                 post {
                     //发布消息给团队中所有的人
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【k8s发布】失败！"
+                            )
+                        }
+                    }
                     success { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
-                    failure { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
                     always { cleanWs() }
                 }
             }
