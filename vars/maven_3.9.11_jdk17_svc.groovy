@@ -21,10 +21,12 @@ def call(String robotId,
         environment {
             // Maven配置
             MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.m2:/root/.m2"
+            K8S_DEPLOY_CONTAINER_ARGS = "$k8sDeployContainerArgs"
             DOCKER_REPOSITORY = '47.120.49.65:5001' //镜像仓库地址
 
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             BRANCH = "$env.BRANCH_NAME"
+            K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
 
         stages {
@@ -62,9 +64,6 @@ def call(String robotId,
                             variable: 'MAVEN_SETTINGS'
                     )]) {
                         sh '''
-                        ls -la
-                        mvn -v
-
                         # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
                         mvn -s "$MAVEN_SETTINGS" package -DskipTests=true
 
@@ -106,7 +105,7 @@ def call(String robotId,
                 agent {
                     docker {
                         image "$k8sDeployImage"
-                        args "$k8sDeployContainerArgs"
+                        args "${env.K8S_DEPLOY_CONTAINER_ARGS}"
                     }
                 }
                 steps {
@@ -114,7 +113,7 @@ def call(String robotId,
                                     serverUrl    : "$k8sServerUrl"]) {
                         // 使用 configFile 插件，创建 Kubernetes 部署文件 deployment.yaml
                         configFileProvider([configFile(
-                                fileId: "${K8S_DEPLOYMENT_FILE_ID}",
+                                fileId: "${env.K8S_DEPLOYMENT_FILE_ID}",
                                 targetLocation: "deployment.tpl")
                         ]) {
                             script {
