@@ -1,8 +1,8 @@
 import xyz.dev.ops.notify.DingTalk
 
 def call(String robotId,
-         String baseImg = "openjdk:17.0-slim",
-         String builderImage = "maven:3.9.11-amazoncorretto-17",
+         String baseImage = "openjdk:17.0-slim",
+         String buildImage = "maven:3.9.11-amazoncorretto-17",
          String k8sServerUrl = "https://kubernetes.default.svc.cluster.local",
          String k8sDeployImage = "bitnami/kubectl:latest",
          String k8sDeployContainerArgs = "-u root:root --entrypoint \"\""
@@ -33,7 +33,7 @@ def call(String robotId,
             stage("Maven构建 & 代码审核") {
                 agent {
                     docker {
-                        image "${builderImage}"
+                        image "${buildImage}"
                         args "${env.MAVEN_BUILD_ARGS}"
                         reuseNode true
                     }
