@@ -139,18 +139,18 @@ def call(Map<String, Object> config) {
                 }
             }
             script {
-                k8sDeployService.deploy(
-                        params.robotId as String,
-                        env.SERVICE_NAME as String,
-                        env.NAMESPACE as String,
-                        env.DOCKER_REPOSITORY as String,
-                        env.IMAGE_NAME as String,
-                        env.VERSION as String,
-                        params.k8sServerUrl as String,
-                        params.k8sDeployImage as String,
-                        env.K8S_DEPLOY_CONTAINER_ARGS as String,
-                        env.K8S_DEPLOYMENT_FILE_ID as String
-                )
+                k8sDeployService.deploy([
+                    robotId               : params.robotId,
+                    serviceName           : env.SERVICE_NAME,
+                    namespace             : env.NAMESPACE,
+                    dockerRepository      : env.DOCKER_REPOSITORY,
+                    imageName             : env.IMAGE_NAME,
+                    version               : env.VERSION,
+                    k8sServerUrl          : params.k8sServerUrl,
+                    k8sDeployImage        : params.k8sDeployImage,
+                    k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
+                    k8sDeploymentFileId  : env.K8S_DEPLOYMENT_FILE_ID
+                ])
             }
         } //stages
 
