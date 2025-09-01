@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: templet
+  namespace: templet
+  labels:
+    app: templet
+    svc_name: templet
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: templet
+      svc_name: templet
+  strategy: # 更新策略
+    type: RollingUpdate  #滚动更新策略
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: templet
+        svc_name: templet
+    spec:
+      containers:
+        - name: templet
+          image: reg.pistonint.com/templet:v1.0.0.2
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: spring-boot-config
+            - secretRef:
+                name: spring-boot-secret
+          resources:
+          #   limits:
+          #     cpu: "0.5"
+          #     memory: 2000Mi
+          #   requests:
+          #     cpu: "0.1"
+          #     memory: 1000Mi
+          # volumeMounts:
+          # - mountPath: /etc/localtime
+          #   name: time-zone
+          #   readOnly: true
+          livenessProbe:  
+            httpGet:
+              path: /actuator/health
+              port: http-port
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http-port
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          ports:
+            - name: http-port
+              containerPort: 21080
+              protocol: TCP
+      # volumes:
+      # - name: time-zone
+      #   hostPath:
+      #     path: /etc/localtime
+      #     type: File
+      imagePullSecrets:
+        - name: reg-pistonint

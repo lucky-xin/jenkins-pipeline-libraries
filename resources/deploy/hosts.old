@@ -1,0 +1,335 @@
+# ******************************************
+# [服务名-环境]
+# [服务名-环境]
+# 服务器名
+#
+# 示例 ：
+# [pistonint-helloworld-dev]
+# gzv-dev-docker-1
+#
+# [pistonint-helloworld-pre]
+# gzv-dev-docker-1
+#
+# [pistonint-helloworld-prod]
+# gzv-dev-docker-1
+# szc-node-1
+# ******************************************
+
+[pistonint-helloworld-dev]
+gzv-dev-docker-1
+
+[pistonint-helloworld-pre]
+szc-node-1
+
+
+# pistonint-access-record
+[pistonint-access-record-dev]
+gzv-dev-docker-1
+
+[pistonint-access-record-pre]
+szc-node-1
+
+# pistonint-api
+[pistonint-api-dev]
+gzv-dev-docker-1
+
+[pistonint-api-pre]
+szc-node-1
+
+# pistonint-app
+[pistonint-app-dev]
+gzv-dev-docker-1
+
+[pistonint-app-pre]
+szc-node-1
+
+# pistonint-auth
+[pistonint-auth-dev]
+gzv-dev-docker-1
+
+[pistonint-auth-pre]
+szc-node-1
+
+# pistonint-auto-dev
+[pistonint-auto-dev-dev]
+gzv-dev-docker-1
+
+[pistonint-auto-dev-pre]
+szc-node-1
+
+# pistonint-automated-test
+[pistonint-automated-test-dev]
+gzv-dev-docker-1
+
+[pistonint-automated-test-pre]
+szc-node-1
+
+# pistonint-car-data
+[pistonint-car-data-dev]
+gzv-dev-docker-1
+
+[pistonint-car-data-pre]
+szc-node-1
+
+# pistonint-cloud-ui
+[pistonint-cloud-ui-dev]
+gzv-dev-docker-1
+
+[pistonint-cloud-ui-pre]
+szc-node-1
+
+# pistonint-customer-mgmt
+[pistonint-customer-mgmt-dev]
+gzv-dev-docker-1
+
+[pistonint-customer-mgmt-pre]
+szc-node-1
+
+# pistonint-data-dictionary
+[pistonint-data-dictionary-dev]
+gzv-dev-docker-1
+
+[pistonint-data-dictionary-pre]
+szc-node-1
+
+# pistonint-db-test
+[pistonint-db-test-dev]
+gzv-dev-docker-1
+
+[pistonint-db-test-pre]
+szc-node-1
+
+# pistonint-demo
+[pistonint-demo-dev]
+gzv-dev-docker-1
+
+[pistonint-demo-pre]
+szc-node-1
+
+# pistonint-distributed-job
+[pistonint-distributed-job-dev]
+gzv-dev-docker-1
+
+[pistonint-distributed-job-pre]
+szc-node-1
+
+# pistonint-doc
+[pistonint-doc-dev]
+gzv-dev-docker-1
+
+[pistonint-doc-pre]
+szc-node-1
+
+# pistonint-entity
+[pistonint-entity-dev]
+gzv-dev-docker-1
+
+[pistonint-entity-pre]
+szc-node-1
+
+# pistonint-feign
+[pistonint-feign-dev]
+gzv-dev-docker-1
+
+[pistonint-feign-pre]
+szc-node-1
+
+# pistonint-file
+[pistonint-file-dev]
+gzv-dev-docker-1
+
+[pistonint-file-pre]
+szc-node-1
+
+# pistonint-framework
+[pistonint-framework-dev]
+gzv-dev-docker-1
+
+[pistonint-framework-pre]
+szc-node-1
+
+# pistonint-gateway
+[pistonint-gateway-dev]
+gzv-dev-docker-1
+
+[pistonint-gateway-pre]
+szc-node-1
+
+# pistonint-global-car-data
+[pistonint-global-car-data-dev]
+gzv-dev-docker-1
+
+[pistonint-global-car-data-pre]
+szc-node-1
+
+# pistonint-global-car-data-monitor
+[pistonint-global-car-data-monitor-dev]
+gzv-dev-docker-1
+
+[pistonint-global-car-data-monitor-pre]
+szc-node-1
+
+# pistonint-groovy
+[pistonint-groovy-dev]
+gzv-dev-docker-1
+
+[pistonint-groovy-pre]
+szc-node-1
+
+# pistonint-idata
+[pistonint-idata-dev]
+gzv-dev-docker-1
+
+[pistonint-idata-pre]
+szc-node-1
+
+# pistonint-jetour
+[pistonint-jetour-dev]
+gzv-dev-docker-1
+
+[pistonint-jetour-pre]
+szc-node-1
+
+# pistonint-job-executor
+[pistonint-job-executor-dev]
+gzv-dev-docker-1
+
+[pistonint-job-executor-pre]
+szc-node-1
+
+# pistonint-job-worker
+[pistonint-job-worker-dev]
+gzv-dev-docker-1
+
+[pistonint-job-worker-pre]
+szc-node-1
+
+# pistonint-lab
+[pistonint-lab-dev]
+gzv-dev-docker-1
+
+[pistonint-lab-pre]
+szc-node-1
+
+# pistonint-netty-learn
+[pistonint-netty-learn-dev]
+gzv-dev-docker-1
+
+[pistonint-netty-learn-pre]
+szc-node-1
+
+# pistonint-ocr
+[pistonint-ocr-dev]
+gzv-dev-docker-1
+
+[pistonint-ocr-pre]
+szc-node-1
+
+# pistonint-pay
+[pistonint-pay-dev]
+gzv-dev-docker-1
+
+[pistonint-pay-pre]
+szc-node-1
+
+# pistonint-rpc
+[pistonint-rpc-dev]
+gzv-dev-docker-1
+
+[pistonint-rpc-pre]
+szc-node-1
+
+# pistonint-scheduler
+[pistonint-scheduler-dev]
+gzv-dev-docker-1
+
+[pistonint-scheduler-pre]
+szc-node-1
+
+# pistonint-script
+[pistonint-script-dev]
+gzv-dev-docker-1
+
+[pistonint-script-pre]
+szc-node-1
+
+# pistonint-sharding-mongodb
+[pistonint-sharding-mongodb-dev]
+gzv-dev-docker-1
+
+[pistonint-sharding-mongodb-pre]
+szc-node-1
+
+# pistonint-sns
+[pistonint-sns-dev]
+gzv-dev-docker-1
+
+[pistonint-sns-pre]
+szc-node-1
+
+# pistonint-spark
+[pistonint-spark-dev]
+gzv-dev-docker-1
+
+[pistonint-spark-pre]
+szc-node-1
+
+# pistonint-cz-star-elite
+[pistonint-cz-star-elite-dev]
+gzv-dev-docker-1
+
+[pistonint-cz-star-elite-pre]
+szc-node-1
+
+# pistonint-tco
+[pistonint-tco-dev]
+gzv-dev-docker-1
+
+[pistonint-tco-pre]
+szc-node-1
+
+# pistonint-upms
+[pistonint-upms-dev]
+gzv-dev-docker-1
+
+[pistonint-upms-pre]
+szc-node-1
+
+# pistonint-voice
+[pistonint-voice-dev]
+gzv-dev-docker-1
+
+[pistonint-voice-pre]
+szc-node-1
+
+# pistonint-yck-pricing
+[pistonint-yck-pricing-dev]
+gzv-dev-docker-1
+
+[pistonint-yck-pricing-pre]
+szc-node-1
+
+# gzv-dev-docker-1
+[pistonint-ucar-data-dev]
+gzv-dev-docker-1
+
+[pistonint-ucar-data-pre]
+szc-node-1
+
+# pistonint-ucar-data-monitor
+[pistonint-ucar-data-monitor-dev]
+gzv-dev-docker-1
+
+[pistonint-ucar-data-monitor-pre]
+szc-node-1
+
+# algo-carpricetrans
+[algo-carpricetrans-dev]
+gzv-dev-docker-1
+
+# pistonint-lshauto
+[pistonint-lshauto-dev]
+gzv-dev-docker-1
+
+[pistonint-cz-lshauto-pre]
+szc-node-1
