@@ -136,7 +136,6 @@ def call(String robotId,
                                 docker buildx build \
                                   --platform linux/arm64/v8,linux/amd64 \
                                   --tag $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
-                                  --build-arg $PLATFORM=linux/arm64/v8 \
                                   --push \
                                   .
                             else
