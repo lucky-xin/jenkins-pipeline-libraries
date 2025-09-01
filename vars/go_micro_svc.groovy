@@ -27,7 +27,7 @@ def call(String robotId,
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             VERSION = "${version}-${COMMIT_ID}" //版本
             K8S_DEPLOY_CONTAINER_ARGS = "$k8sDeployContainerArgs"
-            BRANCH = "$env.BRANCH_NAME"
+            IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "$dockerRepository"
             GITLAB_HOST = 'lab.pistonint.com'
@@ -49,6 +49,11 @@ def call(String robotId,
                             usernameVariable: 'GIT_USERNAME',
                             passwordVariable: 'GIT_PASSWORD')]
                     ) {
+                        script {
+                            if ("${env.BRANCH_NAME}" == "pre") {
+                                env.VERSION = "v${env.VERSION}"
+                            }
+                        }
                         sh label: 'Go build in container', script: '''
                         set -eux
                         go version
@@ -113,10 +118,6 @@ def call(String robotId,
             stage("封装Docker镜像") {
                 steps {
                     script {
-                        dockerTag = "v${env.VERSION}"
-                        if ("${env.BRANCH}" == "pre") {
-                            dockerTag = "v${env.VERSION}"
-                        }
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
 
                         withCredentials([usernamePassword(
@@ -134,14 +135,14 @@ def call(String robotId,
                                 echo "✅ 使用 buildx 构建镜像..."
                                 docker buildx build \
                                   --platform linux/arm64/v8,linux/amd64 \
-                                  --tag $DOCKER_REPOSITORY/$IMAGE_NAME:$dockerTag \
-                                  --build-arg PLATFORM=linux/arm64/v8 \
+                                  --tag ${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}:${env.VERSION} \
+                                  --build-arg ${env.PLATFORM}=linux/arm64/v8 \
                                   --push \
                                   .
                             else
                                 echo "⚠️ buildx 不可用，使用传统构建方式..."
                                 docker build \
-                                  -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
+                                  -t ${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}:${env.VERSION} \
                                   .
                             fi
                         '''

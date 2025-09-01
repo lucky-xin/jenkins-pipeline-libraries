@@ -30,7 +30,6 @@ def call(String robotId,
             NAMESPACE = 'micro-svc-dev'
 
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
-            BRANCH = "$env.BRANCH_NAME"
             // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
@@ -64,10 +63,16 @@ def call(String robotId,
                             } else {
                                 env.SERVICE_NAME = "${env.ARTIFACT_ID}"
                             }
-                            env.VERSION = mvnUtils.readVersion()
+                            env.PROJECT_VERSION = mvnUtils.readVersion()
+                            env.VERSION = "${env.PROJECT_VERSION}-${env.COMMIT_ID}"
+
+                            if ("${env.BRANCH_NAME}" == "pre") {
+                                //docker镜像 tag 为区分环境,pre 前缀有v
+                                env.VERSION = "v${env.VERSION}"
+                            }
+
                             env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
-                            env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
-                            env.JAR_FILE = "${env.ARTIFACT_ID}-${env.VERSION}.jar"
+                            env.JAR_FILE = "${env.ARTIFACT_ID}-${env.PROJECT_VERSION}.jar"
 
                             echo "服务名称: ${env.SERVICE_NAME}"
                             echo "版本: ${env.VERSION}"
@@ -100,10 +105,6 @@ def call(String robotId,
                     echo "开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心..."
                     script {
                         def fullImageName = "${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}"
-                        def dockerTag = "${env.DOCKER_TAG}"
-                        if (env.BRANCH == "pre") {
-                            dockerTag = "v${env.DOCKER_TAG}"
-                        }
                         sh """
                         export DOCKER_BUILDKIT=1
                         docker buildx ls
@@ -113,7 +114,7 @@ def call(String robotId,
                           --build-arg BASE_IMAGE=${baseImage} \
                           --build-arg JAR_FILE=${env.JAR_FILE} \
                           --build-arg APPLICATION_NAME=${env.SERVICE_NAME} \
-                          -t ${fullImageName}:$dockerTag \
+                          -t ${fullImageName}:${env.VERSION} \
                           --platform linux/amd64,linux/arm64 \
                           --push \
                           .
