@@ -30,6 +30,7 @@ def call(String robotId,
             BRANCH = "$env.BRANCH_NAME"
             //镜像仓库地址
             DOCKER_REPOSITORY = "$dockerRepository"
+            GITLAB_HOST = 'lab.pistonint.com'
         }
         stages {
             stage("Golang构建 & 代码审核") {
