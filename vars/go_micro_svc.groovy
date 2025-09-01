@@ -1,15 +1,19 @@
 import xyz.dev.ops.notify.DingTalk
 import xyz.dev.ops.deploy.K8sDeployService
 
-def call(String robotId,
-         String baseImage = "alpine:latest",
-         String buildImage = "golang:1.25",
-         String svcName = "",
-         String version = "1.0.0",
-         String dockerRepository = "47.120.49.65:5001",
-         String k8sServerUrl = "https://kubernetes.default.svc.cluster.local",
-         String k8sDeployImage = "bitnami/kubectl:latest",
-         String k8sDeployContainerArgs = "-u root:root --entrypoint \"\"") {
+def call(Map<String, Object> config) {
+    // 设置默认值
+    def params = [
+            robotId               : config.robotId ?: '',
+            baseImage             : config.baseImage ?: "alpine:latest",
+            buildImage            : config.buildImage ?: "golang:1.25",
+            svcName               : config.svcName ?: "",
+            version               : config.version ?: "1.0.0",
+            dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
+            k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
+            k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+            k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""
+    ]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -25,13 +29,13 @@ def call(String robotId,
         }
         environment {
             BUILD_ARGS = "-u root:root -v $HOME/.cache/go-build/:/tmp/.cache/go-build/"  //本地仓库挂载
-            SERVICE_NAME = "${svcName}"  //服务名称
+            SERVICE_NAME = "${params.svcName}"  //服务名称
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
-            VERSION = "${version}-${COMMIT_ID}" //版本
-            K8S_DEPLOY_CONTAINER_ARGS = "$k8sDeployContainerArgs"
+            VERSION = "${params.version}-${COMMIT_ID}" //版本
+            K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
             //镜像仓库地址
-            DOCKER_REPOSITORY = "$dockerRepository"
+            DOCKER_REPOSITORY = "${params.dockerRepository}"
             GITLAB_HOST = 'lab.pistonint.com'
             NAMESPACE = 'micro-svc-dev'
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
@@ -40,7 +44,7 @@ def call(String robotId,
             stage("Golang构建 & 代码审核") {
                 agent {
                     docker {
-                        image "${buildImage}"
+                        image "${params.buildImage}"
                         args "${env.BUILD_ARGS}"
                         reuseNode true
                     }
@@ -147,16 +151,16 @@ def call(String robotId,
             }
             script {
                 k8sDeployService.deploy(
-                        robotId,
-                        env.SERVICE_NAME,
-                        env.NAMESPACE,
-                        env.DOCKER_REPOSITORY,
-                        env.IMAGE_NAME,
-                        env.VERSION,
-                        k8sServerUrl,
-                        k8sDeployImage,
-                        env.K8S_DEPLOY_CONTAINER_ARGS,
-                        env.K8S_DEPLOYMENT_FILE_ID
+                        params.robotId as String,
+                        env.SERVICE_NAME as String,
+                        env.NAMESPACE as String,
+                        env.DOCKER_REPOSITORY as String,
+                        env.IMAGE_NAME as String,
+                        env.VERSION as String,
+                        params.k8sServerUrl as String,
+                        params.k8sDeployImage as String,
+                        env.K8S_DEPLOY_CONTAINER_ARGS as String,
+                        env.K8S_DEPLOYMENT_FILE_ID as String
                 )
             }
         } //pipeline

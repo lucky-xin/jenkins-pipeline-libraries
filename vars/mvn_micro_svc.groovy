@@ -2,15 +2,18 @@ import xyz.dev.ops.maven.MavenUtils
 import xyz.dev.ops.notify.DingTalk
 import xyz.dev.ops.deploy.K8sDeployService
 
-def call(String robotId,
-         String baseImage = "openjdk:17.0-slim",
-         String buildImage = "maven:3.9.11-amazoncorretto-17",
-         String svcName = "",
-         String dockerRepository = "47.120.49.65:5001",
-         String k8sServerUrl = "https://kubernetes.default.svc.cluster.local",
-         String k8sDeployImage = "bitnami/kubectl:latest",
-         String k8sDeployContainerArgs = "-u root:root --entrypoint \"\""
-) {
+def call(Map<String, Object> config) {
+    // 设置默认值
+    def params = [
+            robotId               : config.robotId ?: '',
+            baseImage             : config.baseImage ?: "openjdk:17.0-slim",
+            buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
+            svcName               : config.svcName ?: "",
+            dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
+            k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
+            k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+            k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""
+    ]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -26,9 +29,9 @@ def call(String robotId,
         environment {
             // Maven配置
             MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.m2:/root/.m2"
-            K8S_DEPLOY_CONTAINER_ARGS = "$k8sDeployContainerArgs"
+            K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
-            DOCKER_REPOSITORY = "$dockerRepository"
+            DOCKER_REPOSITORY = "${params.dockerRepository}"
             NAMESPACE = 'micro-svc-dev'
 
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
@@ -40,7 +43,7 @@ def call(String robotId,
             stage("Maven构建 & 代码审核") {
                 agent {
                     docker {
-                        image "${buildImage}"
+                        image "${params.buildImage}"
                         args "${env.MAVEN_BUILD_ARGS}"
                         reuseNode true
                     }
@@ -60,8 +63,8 @@ def call(String robotId,
                             // 使用通用工具类获取 POM 信息
                             def mvnUtils = new MavenUtils(this)
                             env.ARTIFACT_ID = mvnUtils.readArtifactId()
-                            if (!svcName.isEmpty()) {
-                                env.SERVICE_NAME = "$svcName"
+                            if (!params.svcName.isEmpty()) {
+                                env.SERVICE_NAME = "${params.svcName}"
                             } else {
                                 env.SERVICE_NAME = "${env.ARTIFACT_ID}"
                             }
@@ -113,7 +116,7 @@ def call(String robotId,
                         
                         docker buildx build \
                           --build-arg TZ=Asia/Shanghai \
-                          --build-arg BASE_IMAGE=${baseImage} \
+                          --build-arg BASE_IMAGE=${params.baseImage} \
                           --build-arg JAR_FILE=${env.JAR_FILE} \
                           --build-arg APPLICATION_NAME=${env.SERVICE_NAME} \
                           -t ${fullImageName}:${env.VERSION} \
@@ -137,16 +140,16 @@ def call(String robotId,
             }
             script {
                 k8sDeployService.deploy(
-                    robotId,
-                    env.SERVICE_NAME,
-                    env.NAMESPACE,
-                    env.DOCKER_REPOSITORY,
-                    env.IMAGE_NAME,
-                    env.VERSION,
-                    k8sServerUrl,
-                    k8sDeployImage,
-                    env.K8S_DEPLOY_CONTAINER_ARGS,
-                    env.K8S_DEPLOYMENT_FILE_ID
+                        params.robotId as String,
+                        env.SERVICE_NAME as String,
+                        env.NAMESPACE as String,
+                        env.DOCKER_REPOSITORY as String,
+                        env.IMAGE_NAME as String,
+                        env.VERSION as String,
+                        params.k8sServerUrl as String,
+                        params.k8sDeployImage as String,
+                        env.K8S_DEPLOY_CONTAINER_ARGS as String,
+                        env.K8S_DEPLOYMENT_FILE_ID as String
                 )
             }
         } //stages

@@ -1,9 +1,12 @@
 import xyz.dev.ops.notify.DingTalk
 
-def call(String robotId,
-         String baseImg = "openjdk:17.0-slim",
-         String builderImage = "maven:3.9.11-amazoncorretto-17"
-) {
+def call(Map<String, Object> config) {
+    // 设置默认值
+    def params = [
+            robotId     : config.robotId ?: '',
+            baseImg     : config.baseImg ?: "openjdk:17.0-slim",
+            builderImage: config.builderImage ?: "maven:3.9.11-amazoncorretto-17"
+    ]
 
     def dingTalk = new DingTalk()
     pipeline {
@@ -26,7 +29,7 @@ def call(String robotId,
             stage("Maven构建 & 代码审核") {
                 agent {
                     docker {
-                        image "${builderImage}"
+                        image "${params.builderImage}"
                         args "${env.MAVEN_BUILD_ARGS}"
                         reuseNode true
                     }
@@ -63,7 +66,7 @@ def call(String robotId,
                     }
                 }
                 post {
-                    failure { script { dingTalk.post("${robotId}", "${env.SERVICE_NAME}") } }
+                    failure { script { dingTalk.post("${params.robotId}", "${env.SERVICE_NAME}") } }
                 }
             }
         } //stages
