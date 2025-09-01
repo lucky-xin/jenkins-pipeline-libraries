@@ -132,7 +132,7 @@ def call(String robotId,
                     }
                 }
             }
-            stage('k8s发布') {
+            stage('k8s部署') {
                 agent {
                     docker {
                         image "$k8sDeployImage"
@@ -173,7 +173,7 @@ def call(String robotId,
                             dingTalk.post(
                                     "${robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【k8s发布】失败！"
+                                    "【k8s部署】失败！"
                             )
                         }
                     }
