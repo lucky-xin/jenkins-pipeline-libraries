@@ -22,25 +22,25 @@ def CreateMsg() {
     return changeString
 }
 
-def post(String robotID, String jobName, String reason = "") {
+def post(String robotId, String jobName, String reason = "") {
     def changeString = CreateMsg()
-    dingtalk(
-            robot: robotID,
-            type: 'MARKDOWN',
-            title: "${jobName}",
-            text: [
-                    "# [${jobName}](${env.RUN_DISPLAY_URL})",
-                    "------",
-                    "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
-                    "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>", //
-                    reason.isEmpty() ? "" : "- 原因：" + reason,
-                    "- 执行：${currentBuild.buildCauses.shortDescription}",
-                    "- 日志：[点击查看详情](${env.BUILD_URL}console)",
-                    "### 更新记录:",
-                    "${changeString}"
-            ],
-            // at: [
-            //     '电话号码'
-            // ]
-    )
+//    dingtalk(
+//            robot: robotId,
+//            type: 'MARKDOWN',
+//            title: "${jobName}",
+//            text: [
+//                    "# [${jobName}](${env.RUN_DISPLAY_URL})",
+//                    "------",
+//                    "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
+//                    "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
+//                    reason.isEmpty() ? "" : "- 原因：" + reason,
+//                    "- 执行：${currentBuild.buildCauses.shortDescription}",
+//                    "- 日志：[点击查看详情](${env.BUILD_URL}console)",
+//                    "### 更新记录:",
+//                    "${changeString}"
+//            ],
+//            // at: [
+//            //     '电话号码'
+//            // ]
+//    )
 } 

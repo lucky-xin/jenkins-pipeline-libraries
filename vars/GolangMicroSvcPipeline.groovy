@@ -8,7 +8,7 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "golang:1.25",
                   svcName               : config.svcName ?: "",
                   version               : config.version ?: "1.0.0",
-                  sonarqubeServerUrl    : config.version ?: "1.0.0",
+                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "8.145.35.103:9000",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
@@ -38,18 +38,25 @@ def call(Map<String, Object> config) {
             GITLAB_HOST = 'lab.pistonint.com'
             NAMESPACE = 'micro-svc-dev'
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
+            SONARQUBE_TOKEN_SECRET = credentials('sonarqube-token-secret')
         }
         stages {
-            agent any
+            agent {
+                docker {
+                    image "sonarsource/sonar-scanner-cli:latest"
+                    args "-e SONAR_HOST_URL=\"${params.sonarqubeServerUrl}\" -e SONAR_TOKEN=\"${env.SONARQUBE_TOKEN_SECRET}\""
+                }
+            }
             stage("代码审核") {
                 steps {
                     sh """
-                     /opt/sonar-scanner/bin/sonar-scanner \
-                    -Dsonar.projectKey=${env.SERVICE_NAME} \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=${params.sonarqubeServerUrl}\
-                    -Dsonar.login=cb4238366e2fb9b8a89324eef5581cdec439a36d
+                       sonar-scanner \
+                       -Dsonar.projectKey=${env.SERVICE_NAME} \
+                       -Dsonar.sources=. \
+                       -Dsonar.projectName=${env.SERVICE_NAME} \
                     """
+                    // -Dsonar.host.url=${params.sonarqubeServerUrl}
+                    // -Dsonar.login=cb4238366e2fb9b8a89324eef5581cdec439a36d
                 }
             }
             stage("Golang构建") {
@@ -116,7 +123,8 @@ def call(Map<String, Object> config) {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
 
-                        withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
+                        withCredentials([usernamePassword(
+                                credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'GIT_USERNAME',
                                 passwordVariable: 'GIT_PASSWORD')]) {
                             sh label: 'Docker build with GitLab credentials', script: '''
@@ -146,9 +154,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post("${robotId}",
+                            dingTalk.post(
+                                    "${robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【封装Docker】失败！")
+                                    "【封装Docker】失败！"
+                            )
                         }
                     }
                 }
