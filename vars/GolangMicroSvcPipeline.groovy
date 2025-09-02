@@ -63,7 +63,8 @@ def call(Map<String, Object> config) {
 
                 steps {
                     checkout scm
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-secret',
+                    withCredentials([usernamePassword(
+                            credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
                             passwordVariable: 'GIT_PASSWORD')]) {
                         script {
