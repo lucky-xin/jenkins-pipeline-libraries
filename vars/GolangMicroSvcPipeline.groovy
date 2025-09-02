@@ -3,17 +3,16 @@ import xyz.dev.ops.notify.DingTalk
 
 def call(Map<String, Object> config) {
     // 设置默认值
-    def params = [
-            robotId               : config.robotId ?: '',
-            baseImage             : config.baseImage ?: "alpine:latest",
-            buildImage            : config.buildImage ?: "golang:1.25",
-            svcName               : config.svcName ?: "",
-            version               : config.version ?: "1.0.0",
-            dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
-            k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
-            k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
-            k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""
-    ]
+    def params = [robotId               : config.robotId ?: '',
+                  baseImage             : config.baseImage ?: "alpine:latest",
+                  buildImage            : config.buildImage ?: "golang:1.25",
+                  svcName               : config.svcName ?: "",
+                  version               : config.version ?: "1.0.0",
+                  sonarqubeServerUrl    : config.version ?: "1.0.0",
+                  dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
+                  k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
+                  k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+                  k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -41,7 +40,19 @@ def call(Map<String, Object> config) {
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
         stages {
-            stage("Golang构建 & 代码审核") {
+            agent any
+            stage("代码审核") {
+                steps {
+                    sh """
+                     /opt/sonar-scanner/bin/sonar-scanner \
+                    -Dsonar.projectKey=${env.SERVICE_NAME} \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=${params.sonarqubeServerUrl}\
+                    -Dsonar.login=cb4238366e2fb9b8a89324eef5581cdec439a36d
+                    """
+                }
+            }
+            stage("Golang构建") {
                 agent {
                     docker {
                         image "${params.buildImage}"
@@ -52,11 +63,9 @@ def call(Map<String, Object> config) {
 
                 steps {
                     checkout scm
-                    withCredentials([usernamePassword(
-                            credentialsId: 'gitlab-secret',
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
-                            passwordVariable: 'GIT_PASSWORD')]
-                    ) {
+                            passwordVariable: 'GIT_PASSWORD')]) {
                         script {
                             if ("${env.BRANCH_NAME}" == "pre") {
                                 env.VERSION = "v${env.VERSION}"
@@ -94,11 +103,9 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
+                            dingTalk.post("${robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【Golang构建 & 代码审核】失败！"
-                            )
+                                    "【Golang构建 & 代码审核】失败！")
                         }
                     }
                 }
@@ -108,11 +115,9 @@ def call(Map<String, Object> config) {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
 
-                        withCredentials([usernamePassword(
-                                credentialsId: 'docker-registry-secret',
+                        withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'GIT_USERNAME',
-                                passwordVariable: 'GIT_PASSWORD')]
-                        ) {
+                                passwordVariable: 'GIT_PASSWORD')]) {
                             sh label: 'Docker build with GitLab credentials', script: '''
                             set -eux
                             # 启用 BuildKit
@@ -140,16 +145,14 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
+                            dingTalk.post("${robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【封装Docker】失败！"
-                            )
+                                    "【封装Docker】失败！")
                         }
                     }
                 }
             }
-            stage('k8s发布') {
+            stage("k8s发布") {
                 agent {
                     docker {
                         image "${params.k8sDeployImage}"
@@ -175,19 +178,15 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}"
-                            )
+                            dingTalk.post("${params.robotId}",
+                                    "${env.SERVICE_NAME}")
                         }
                     }
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
+                            dingTalk.post("${params.robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【k8s发布】失败！"
-                            )
+                                    "【k8s发布】失败！")
                         }
                     }
                     always { cleanWs() }
