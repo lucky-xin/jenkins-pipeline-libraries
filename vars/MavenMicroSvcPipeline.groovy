@@ -16,7 +16,7 @@ def call(Map<String, Object> config) {
     ]
 
     def dingTalk = new DingTalk()
-    def k8sDeployService = new K8sDeployService()
+    def k8sDeployService = new K8sDeployService(this)
     pipeline {
         agent any
         options {
