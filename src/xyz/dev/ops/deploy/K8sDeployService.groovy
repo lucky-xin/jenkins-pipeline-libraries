@@ -28,7 +28,7 @@ class K8sDeployService implements Serializable {
 
         // 直接执行部署逻辑，不包装在 stage 中
         // 因为调用方已经在 stage 中调用了这个方法
-        script.withKubeConfig([credentialsId: "jenkins-k8s-config",
+        script.withKubeConfig([credentialsId: "k8s-config",
                                serverUrl    : params.k8sServerUrl]) {
             // 使用 configFile 插件，创建 Kubernetes 部署文件 deployment.yaml
             script.configFileProvider([script.configFile(
