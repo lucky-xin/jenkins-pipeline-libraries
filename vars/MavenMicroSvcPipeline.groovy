@@ -10,7 +10,7 @@ def call(Map<String, Object> config) {
             buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
             svcName               : config.svcName ?: "",
             dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
-            k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
+            k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
             k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
             k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""
     ]
