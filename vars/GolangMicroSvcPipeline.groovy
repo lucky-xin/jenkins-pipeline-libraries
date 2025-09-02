@@ -8,7 +8,7 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "golang:1.25",
                   svcName               : config.svcName ?: "",
                   version               : config.version ?: "1.0.0",
-                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "8.145.35.103:9000",
+                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "172.29.35.103:9000",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
