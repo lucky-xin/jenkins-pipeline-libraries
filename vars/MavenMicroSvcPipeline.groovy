@@ -112,7 +112,6 @@ def call(Map<String, Object> config) {
                         def fullImageName = "${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}"
                         sh """
                         export DOCKER_BUILDKIT=1
-                        docker buildx ls
                         
                         docker buildx build \
                           --build-arg TZ=Asia/Shanghai \
@@ -147,18 +146,18 @@ def call(Map<String, Object> config) {
                 }
                 steps {
                     script {
-                        k8sDeployService.deploy([
-                                robotId               : params.robotId,
-                                serviceName           : env.SERVICE_NAME,
-                                namespace             : env.NAMESPACE,
-                                dockerRepository      : env.DOCKER_REPOSITORY,
-                                imageName             : env.IMAGE_NAME,
-                                version               : env.VERSION,
-                                k8sServerUrl          : params.k8sServerUrl,
-                                k8sDeployImage        : params.k8sDeployImage,
-                                k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
-                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
-                        ])
+//                        k8sDeployService.deploy([
+//                                robotId               : params.robotId,
+//                                serviceName           : env.SERVICE_NAME,
+//                                namespace             : env.NAMESPACE,
+//                                dockerRepository      : env.DOCKER_REPOSITORY,
+//                                imageName             : env.IMAGE_NAME,
+//                                version               : env.VERSION,
+//                                k8sServerUrl          : params.k8sServerUrl,
+//                                k8sDeployImage        : params.k8sDeployImage,
+//                                k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
+//                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
+//                        ])
                     }
                 }
                 post {
@@ -166,8 +165,7 @@ def call(Map<String, Object> config) {
                         script {
                             dingTalk.post(
                                     "${params.robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【k8s发布】成功！"
+                                    "${env.SERVICE_NAME}"
                             )
                         }
                     }
