@@ -49,6 +49,7 @@ def call(Map<String, Object> config) {
                     }
                 }
                 steps {
+                    checkout scm
                     sh """
                        sonar-scanner \
                        -Dsonar.projectKey=${env.SERVICE_NAME} \
@@ -69,7 +70,6 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
-                    checkout scm
                     withCredentials([usernamePassword(
                             credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
