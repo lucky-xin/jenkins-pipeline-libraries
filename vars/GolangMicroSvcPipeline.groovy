@@ -41,13 +41,13 @@ def call(Map<String, Object> config) {
             SONARQUBE_TOKEN_SECRET = credentials('sonarqube-token-secret')
         }
         stages {
-            agent {
-                docker {
-                    image "sonarsource/sonar-scanner-cli:latest"
-                    args "-e SONAR_HOST_URL=\"${params.sonarqubeServerUrl}\" -e SONAR_TOKEN=\"${env.SONARQUBE_TOKEN_SECRET}\""
-                }
-            }
             stage("代码审核") {
+                agent {
+                    docker {
+                        image "sonarsource/sonar-scanner-cli:latest"
+                        args "-e SONAR_HOST_URL=\"${params.sonarqubeServerUrl}\" -e SONAR_TOKEN=\"${env.SONARQUBE_TOKEN_SECRET}\""
+                    }
+                }
                 steps {
                     sh """
                        sonar-scanner \
