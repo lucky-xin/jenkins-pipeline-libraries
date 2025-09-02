@@ -1,5 +1,5 @@
-import xyz.dev.ops.notify.DingTalk
 import xyz.dev.ops.deploy.K8sDeployService
+import xyz.dev.ops.notify.DingTalk
 
 def call(Map<String, Object> config) {
     // 设置默认值
@@ -150,6 +150,12 @@ def call(Map<String, Object> config) {
                 }
             }
             stage('k8s发布') {
+                agent {
+                    docker {
+                        image "${params.k8sDeployImage}"
+                        args "${params.k8sDeployContainerArgs}"
+                    }
+                }
                 steps {
                     script {
                         k8sDeployService.deploy([
@@ -165,6 +171,27 @@ def call(Map<String, Object> config) {
                             k8sDeploymentFileId  : env.K8S_DEPLOYMENT_FILE_ID
                         ])
                     }
+                }
+                post {
+                    success {
+                        script {
+                            dingTalk.post(
+                                    "${params.robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【k8s发布】成功！"
+                            )
+                        }
+                    }
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${params.robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【k8s发布】失败！"
+                            )
+                        }
+                    }
+                    always { cleanWs() }
                 }
             }
         } //stages

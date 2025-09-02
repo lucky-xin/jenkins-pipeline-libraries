@@ -16,7 +16,7 @@ def call(Map<String, Object> config) {
     ]
 
     def dingTalk = new DingTalk()
-    def k8sDeployService = new K8sDeployService(this)
+    def k8sDeployService = new K8sDeployService()
     pipeline {
         agent any
         options {
@@ -139,6 +139,12 @@ def call(Map<String, Object> config) {
                 }
             }
             stage('k8s发布') {
+                agent {
+                    docker {
+                        image "${params.k8sDeployImage}"
+                        args "${params.k8sDeployContainerArgs}"
+                    }
+                }
                 steps {
                     script {
                         k8sDeployService.deploy([
