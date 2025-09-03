@@ -152,27 +152,31 @@ def call(Map<String, Object> config) {
                         withCredentials([usernamePassword(
                                 credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'GIT_USERNAME',
-                                passwordVariable: 'GIT_PASSWORD')]) {
-                            sh label: 'Docker build with GitLab credentials', script: '''
-                            set -eux
-                            # 启用 BuildKit
-                            export DOCKER_BUILDKIT=1
-                            
-                            # 检查 buildx 是否可用
-                            if docker buildx version >/dev/null 2>&1 && docker buildx inspect jenkins-builder >/dev/null 2>&1; then
-                                echo "✅ 使用 buildx 构建镜像..."
-                                docker buildx build \
-                                  --platform linux/amd64,linux/arm64/v8 \
-                                  --tag $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
-                                  --push \
-                                  .
-                            else
-                                echo "⚠️ buildx 不可用，使用传统构建方式..."
-                                docker build \
-                                  -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
-                                  .
-                            fi
-                        '''
+                                passwordVariable: 'GIT_PASSWORD'
+                        )]) {
+                            sh label: "Docker build with GitLab credentials", script: """
+                                set -eux
+                                # 启用 BuildKit
+                                export DOCKER_BUILDKIT=1
+                                
+                                # 登录镜像仓库
+                                echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
+                                
+                                # 检查 buildx 是否可用
+                                if docker buildx version >/dev/null 2>&1 && docker buildx inspect jenkins-builder >/dev/null 2>&1; then
+                                    echo "✅ 使用 buildx 构建镜像..."
+                                    docker buildx build \
+                                      -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
+                                      --platform linux/amd64,linux/arm64/v8 \
+                                      --push \
+                                      .
+                                else
+                                    echo "⚠️ buildx 不可用，使用传统构建方式..."
+                                    docker build \
+                                      -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
+                                      .
+                                fi
+                        """
                         }
                     }
                 }

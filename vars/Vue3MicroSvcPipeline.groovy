@@ -5,8 +5,8 @@ import xyz.dev.ops.notify.DingTalk
 def call(Map<String, Object> config) {
     // 设置默认值
     def params = [robotId               : config.robotId ?: '',
-                  baseImage             : config.baseImage ?: "openjdk:17.0-slim",
-                  buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
+                  baseImage             : config.baseImage ?: "nginx:1.27-alpine",
+                  buildImage            : config.buildImage ?: "node:24.6.0-alpine3.22",
                   svcName               : config.svcName ?: "",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
@@ -31,14 +31,14 @@ def call(Map<String, Object> config) {
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
             NAMESPACE = 'micro-svc-dev'
-
+            IMAGE_NAME = "micro-svc/${params.svcName}"
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
 
         stages {
-            stage("Maven构建 & 代码审核") {
+            stage("Vue3构建 & 代码审核") {
                 agent {
                     docker {
                         image "${params.buildImage}"
@@ -48,48 +48,31 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
-                    echo "开始Maven构建..."
+                    echo '开始使用 Node 构建前端...'
                     checkout scm
+                    sh label: 'Node build in container', script: """
+                    set -eux
+                    # 设置 Node.js 内存限制，避免堆内存溢出
+                    export NODE_OPTIONS="--max-old-space-size=4096"
+                    echo "Node.js 内存配置: $NODE_OPTIONS"
 
-                    // Maven配置文件
-                    configFileProvider([configFile(
-                            fileId: '42697037-54bd-44a1-80c2-7a97d30f2266',
-                            variable: 'MAVEN_SETTINGS'
-                    )]) {
+                    node -v
+                    corepack enable
+                    corepack prepare yarn@1.22.22 --activate
 
-                        script {
-                            // 使用通用工具类获取 POM 信息
-                            def mvnUtils = new MavenUtils(this)
-                            env.ARTIFACT_ID = mvnUtils.readArtifactId()
-                            if (!params.svcName.isEmpty()) {
-                                env.SERVICE_NAME = "${params.svcName}"
-                            } else {
-                                env.SERVICE_NAME = "${env.ARTIFACT_ID}"
-                            }
-                            env.PROJECT_VERSION = mvnUtils.readVersion()
-                            env.VERSION = "${env.PROJECT_VERSION}-${env.COMMIT_ID}"
+                    export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+                    export YARN_TIMEOUT=600000
 
-                            if ("${env.BRANCH_NAME}" == "pre") {
-                                //docker镜像 tag 为区分环境,pre 前缀有v
-                                env.VERSION = "v${env.VERSION}"
-                            }
+                    yarn config set registry https://registry.npmmirror.com
+                    yarn config set network-concurrency 8
+                    yarn config set prefer-offline true
+                    yarn config set cache-folder /root/.cache/yarn
 
-                            env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
-                            env.JAR_FILE = "${env.ARTIFACT_ID}-${env.PROJECT_VERSION}.jar"
+                    yarn install --frozen-lockfile --network-timeout 600000 --prefer-offline
+                    yarn build
 
-                            echo "服务名称: ${env.SERVICE_NAME}"
-                            echo "版本: ${env.VERSION}"
-                            echo "JAR文件: ${env.JAR_FILE}"
-                        }
-
-                        sh """
-                        # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
-                        mvn -B -s "$MAVEN_SETTINGS" package sonar:sonar -Dsonar.projectKey=${env.SERVICE_NAME}
-
-                        # 验证JAR文件是否生成
-                        ls -la target/*.jar
-                        """
-                    }
+                    test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
+                """
                 }
                 post {
                     failure {
@@ -97,7 +80,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【Maven构建 & 代码审核】失败！"
+                                    reason : "【Vue3构建 & 代码审核】失败！"
                             ])
                         }
                     }
@@ -105,32 +88,25 @@ def call(Map<String, Object> config) {
             }
             stage('封装Docker镜像') {
                 steps {
-                    echo "开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心..."
-                    script {
-                        withCredentials([usernamePassword(
-                                credentialsId: 'docker-registry-secret',
-                                usernameVariable: 'REGISTRY_USERNAME',
-                                passwordVariable: 'REGISTRY_PASSWORD'
-                        )]) {
-                            sh label: "Docker buildx build and push", script: """
-                                set -eux
-                                # 启用 BuildKit
-                                export DOCKER_BUILDKIT=1
-    
-                                # 登录镜像仓库
-                                echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
-    
-                                docker buildx build \
-                                --build-arg TZ=Asia/Shanghai \
-                                --build-arg BASE_IMAGE=${params.baseImage} \
-                                --build-arg JAR_FILE=${env.JAR_FILE} \
-                                --build-arg APPLICATION_NAME=${env.SERVICE_NAME} \
-                                -t ${env.DOCKER_REPOSITORY}/${env.IMAGE_NAME}:${env.VERSION} \
-                                --platform linux/amd64,linux/arm64/v8 \
-                                --push \
-                                .
-                            """
-                        }
+                    withCredentials([usernamePassword(
+                            credentialsId: 'docker-registry-secret',
+                            usernameVariable: 'REGISTRY_USERNAME',
+                            passwordVariable: 'REGISTRY_PASSWORD'
+                    )]) {
+                        sh label: "Docker buildx build and push", script: """
+                            set -eux
+                            # 启用 BuildKit
+                            export DOCKER_BUILDKIT=1
+
+                            # 登录镜像仓库
+                            echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
+
+                            docker buildx build \
+                              -t $REGISTRY/$IMAGE_NAME:$VERSION \
+                              --platform linux/amd64,linux/arm64/v8 \
+                              --push \
+                              .
+                        """
                     }
                 }
                 post {
