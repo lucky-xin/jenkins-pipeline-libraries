@@ -160,7 +160,7 @@ def call(Map<String, Object> config) {
                                 export DOCKER_BUILDKIT=1
                                 
                                 # 登录镜像仓库
-                                echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
+                                echo "$REGISTRY_PASSWORD" | docker login "$DOCKER_REPOSITORY" -u "$REGISTRY_USERNAME" --password-stdin
                                 
                                 # 检查 buildx 是否可用
                                 if docker buildx version >/dev/null 2>&1 && docker buildx inspect jenkins-builder >/dev/null 2>&1; then
