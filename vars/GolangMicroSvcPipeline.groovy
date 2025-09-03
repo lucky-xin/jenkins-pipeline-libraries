@@ -93,11 +93,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【Golang构建 & 代码审核】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【Golang构建 & 代码审核】失败！"
+                            ])
                         }
                     }
                 }
@@ -146,13 +146,12 @@ def call(Map<String, Object> config) {
                             // 使用 sh 命令直接运行 Docker 容器
                             sh """
                                 echo '开始执行 SonarQube 代码扫描...'
-                                docker run --rm -u root:root \
-                                    -v \$(pwd):/usr/src \
-                                    -v \$(pwd)/sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties \
-                                    -w /usr/src \
-                                    --name sonar-scanner-cli \
-                                    sonarsource/sonar-scanner-cli:latest
-                                docker logs -f sonar-scanner-cli
+                                docker run --rm -u root:root \\
+                                    -v \$(pwd):/usr/src \\
+                                    -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties \\
+                                    -w /usr/src \\
+                                    sonarsource/sonar-scanner-cli:latest \\
+                                    sonar-scanner
                                 echo 'SonarQube 代码扫描完成'
                             """
                         }
@@ -161,11 +160,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【代码审核】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【代码审核】失败！"
+                            ])
                         }
                     }
                 }
@@ -206,11 +205,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【封装Docker】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【封装Docker】失败！"
+                            ])
                         }
                     }
                 }
@@ -241,17 +240,20 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}")
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
+                            ])
                         }
                     }
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【k8s发布】失败！")
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【k8s发布】失败！"
+                            ])
                         }
                     }
                     always { cleanWs() }

@@ -66,7 +66,15 @@ def call(Map<String, Object> config) {
                     }
                 }
                 post {
-                    failure { script { dingTalk.post("${params.robotId}", "${env.SERVICE_NAME}") } }
+                    failure { 
+                        script { 
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【Maven构建 & 代码审核】失败！"
+                            ])
+                        } 
+                    }
                 }
             }
         } //stages

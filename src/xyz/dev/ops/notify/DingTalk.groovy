@@ -22,25 +22,35 @@ def CreateMsg() {
     return changeString
 }
 
-def post(String robotId, String jobName, String reason = "") {
+def post(Map<String, Object> config) {
+    // 设置默认值
+    def params = [
+            robotId           : config.robotId ?: '',
+            jobName           : config.jobName ?: '',
+            reason            : config.reason ?: '',
+            title             : config.title ?: config.jobName ?: '',
+            sonarqubeServerUrl: config.sonarqubeServerUrl ?: ''
+    ]
+
     def changeString = CreateMsg()
-//    dingtalk(
-//            robot: robotId,
-//            type: 'MARKDOWN',
-//            title: "${jobName}",
-//            text: [
-//                    "# [${jobName}](${env.RUN_DISPLAY_URL})",
-//                    "------",
-//                    "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
-//                    "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
-//                    reason.isEmpty() ? "" : "- 原因：" + reason,
-//                    "- 执行：${currentBuild.buildCauses.shortDescription}",
-//                    "- 日志：[点击查看详情](${env.BUILD_URL}console)",
-//                    "### 更新记录:",
-//                    "${changeString}"
-//            ],
-//            // at: [
-//            //     '电话号码'
-//            // ]
-//    )
+    dingtalk(
+            robot: params.robotId,
+            type: 'MARKDOWN',
+            title: params.title,
+            text: [
+                    "# [${params.jobName}](${env.RUN_DISPLAY_URL})",
+                    "------",
+                    "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
+                    "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
+                    params.reason.isEmpty() ? "" : "- 原因：" + params.reason,
+                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 代码质量报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName})",
+                    "- 执行：${currentBuild.buildCauses.shortDescription}",
+                    "- 日志：[点击查看详情](${env.BUILD_URL}console)",
+                    "### 更新记录:",
+                    "${changeString}"
+            ],
+            // at: [
+            //     '电话号码'
+            // ]
+    )
 } 

@@ -96,11 +96,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【Maven构建 & 代码审核】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【Maven构建 & 代码审核】失败！"
+                            ])
                         }
                     }
                 }
@@ -128,11 +128,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【封装Docker镜像】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【封装Docker镜像】失败！"
+                            ])
                         }
                     }
                 }
@@ -163,19 +163,20 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                sonarqubeServerUrl: "${params.sonarqubeServerUrl}",
+                            ])
                         }
                     }
                     failure {
                         script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【k8s发布】失败！"
-                            )
+                            dingTalk.post([
+                                robotId: "${params.robotId}",
+                                jobName: "${env.SERVICE_NAME}",
+                                reason: "【k8s发布】失败！"
+                            ])
                         }
                     }
                     always { cleanWs() }
