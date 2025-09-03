@@ -41,28 +41,6 @@ def call(Map<String, Object> config) {
             SONAR_TOKEN = credentials('sonarqube-token-secret')
         }
         stages {
-            stage("代码审核") {
-                agent {
-                    docker {
-                        image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
-                    }
-                }
-                steps {
-                    checkout scm
-                }
-                post {
-                    failure {
-                        script {
-                            dingTalk.post(
-                                    "${params.robotId}",
-                                    "${env.SERVICE_NAME}",
-                                    "【代码审核】失败！"
-                            )
-                        }
-                    }
-                }
-            }
             stage("Golang构建") {
                 agent {
                     docker {
@@ -73,6 +51,7 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
+                    checkout scm
                     withCredentials([usernamePassword(
                             credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
@@ -117,6 +96,28 @@ def call(Map<String, Object> config) {
                             dingTalk.post("${robotId}",
                                     "${env.SERVICE_NAME}",
                                     "【Golang构建 & 代码审核】失败！")
+                        }
+                    }
+                }
+            }
+            stage("代码审核") {
+                agent {
+                    docker {
+                        image "sonarsource/sonar-scanner-cli:latest"
+                        args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
+                    }
+                }
+                steps {
+
+                }
+                post {
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${params.robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【代码审核】失败！"
+                            )
                         }
                     }
                 }
