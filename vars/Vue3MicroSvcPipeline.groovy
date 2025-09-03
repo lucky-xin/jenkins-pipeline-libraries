@@ -9,6 +9,7 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "node:24.6.0-alpine3.22",
                   svcName               : config.svcName ?: "",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
+                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "http://8.145.35.103:9000",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""]
