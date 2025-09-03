@@ -148,6 +148,7 @@ def call(Map<String, Object> config) {
                                 echo '开始执行 SonarQube 代码扫描...'
                                 ls -la
                                 docker run --rm -u root:root \\
+                                    --platform linux/amd64 \\
                                     -v ./:/usr/src \\
                                     --entrypoint /bin/sh \\
                                     sonarsource/sonar-scanner-cli:latest \\
