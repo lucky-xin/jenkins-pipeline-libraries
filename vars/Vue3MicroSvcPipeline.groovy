@@ -27,7 +27,7 @@ def call(Map<String, Object> config) {
         }
         environment {
             // Maven配置
-            MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:/root/.cache/yarn"
+            MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:/root/.cache/yarn --cpus=2 --memory=4g"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
