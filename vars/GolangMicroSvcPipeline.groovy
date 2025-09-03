@@ -164,7 +164,7 @@ def call(Map<String, Object> config) {
                                     -e SONAR_INCLUSIONS=**/*.go \\
                                     -e SONAR_TEST_EXCLUSIONS=**/*_test.go \\
                                     -e SONAR_TEST_INCLUSIONS=**/*_test.go \\
-                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go 
+                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \\
                                     xin8/sonar-scanner-cli:latest
                                 echo 'SonarQube 代码扫描完成'
                             """
