@@ -32,6 +32,7 @@ def call(Map<String, Object> config) {
             DOCKER_REPOSITORY = "${params.dockerRepository}"
             NAMESPACE = 'micro-svc-dev'
             IMAGE_NAME = "micro-svc/${params.svcName}"
+            SERVICE_NAME = "${params.svcName}"
             COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
@@ -54,7 +55,6 @@ def call(Map<String, Object> config) {
                     set -eux
                     # 设置 Node.js 内存限制，避免堆内存溢出
                     export NODE_OPTIONS="--max-old-space-size=4096"
-                    echo "Node.js 内存配置: $NODE_OPTIONS"
 
                     node -v
                     corepack enable
