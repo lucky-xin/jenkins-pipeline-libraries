@@ -106,13 +106,55 @@ def call(Map<String, Object> config) {
                 agent {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -Dsonar.projectKey=${env.SERVICE_NAME} -Dsonar.projectName=${env.SERVICE_NAME} -Dsonar.projectVersion=${params.version} -Dsonar.sources=/usr/src"
+                        args "-u root:root -v ./:/usr/src --entrypoint \"\""
                         reuseNode true
                     }
                 }
                 steps {
-                    script {
-                        echo '开始代码审核...'
+                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
+                        script {
+                            // 生成 sonar-scanner.properties 文件
+                            def sonarProperties = """
+                            # SonarQube 项目配置
+                            sonar.projectKey=${env.SERVICE_NAME}
+                            sonar.projectName=${env.SERVICE_NAME}
+                            sonar.projectVersion=${env.VERSION}
+
+                            # 源码配置
+                            sonar.sources=.
+                            sonar.exclusions=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/**
+
+                            # Go 语言配置
+                            sonar.go.coverage.reportPaths=coverage.out
+                            sonar.go.tests.reportPaths=test-report.xml
+
+                            # 编码配置
+                            sonar.sourceEncoding=UTF-8
+
+                            # SonarQube 服务器配置
+                            sonar.host.url=${params.sonarqubeServerUrl}
+                            sonar.login=${SONAR_TOKEN}
+
+                            # 其他配置
+                            sonar.verbose=true
+                            sonar.log.level=INFO
+                            """
+                            
+                            // 写入 sonar-scanner.properties 文件
+                            writeFile file: 'sonar-scanner.properties', text: sonarProperties
+                            echo '已生成 sonar-scanner.properties 文件'
+                            
+                            // 显示配置文件内容（隐藏敏感信息）
+                            def displayProperties = sonarProperties.replaceAll(/sonar\.login=.*/, 'sonar.login=****')
+                            echo "配置文件内容：\n${displayProperties}"
+                            
+                            // 执行 sonar-scanner 命令
+                            sh """
+                                echo '开始执行 SonarQube 代码扫描...'
+                                sonar-scanner -Dproject.settings=./sonar-scanner.properties
+                                echo 'SonarQube 代码扫描完成'
+                            """
+                        }
                     }
                 }
                 post {
