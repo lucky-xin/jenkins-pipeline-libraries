@@ -146,6 +146,7 @@ def call(Map<String, Object> config) {
                             // 使用 sh 命令直接运行 Docker 容器
                             sh """
                                 echo '开始执行 SonarQube 代码扫描...'
+                                ls -la
                                 docker run --rm -u root:root \\
                                     -v ./:/usr/src \\
                                     -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties \\
