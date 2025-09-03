@@ -151,8 +151,8 @@ def call(Map<String, Object> config) {
 
                         withCredentials([usernamePassword(
                                 credentialsId: 'docker-registry-secret',
-                                usernameVariable: 'GIT_USERNAME',
-                                passwordVariable: 'GIT_PASSWORD'
+                                usernameVariable: 'REGISTRY_USERNAME',
+                                passwordVariable: 'REGISTRY_PASSWORD'
                         )]) {
                             sh label: "Docker build with GitLab credentials", script: """
                                 set -eux
