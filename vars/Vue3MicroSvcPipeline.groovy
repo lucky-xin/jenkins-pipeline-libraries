@@ -99,7 +99,7 @@ def call(Map<String, Object> config) {
                             export DOCKER_BUILDKIT=1
 
                             # 登录镜像仓库
-                            echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin
+                            echo "$REGISTRY_PASSWORD" | docker login "$DOCKER_REPOSITORY" -u "$REGISTRY_USERNAME" --password-stdin
 
                             docker buildx build \
                               -t $REGISTRY/$IMAGE_NAME:$VERSION \
