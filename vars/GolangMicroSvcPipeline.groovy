@@ -107,9 +107,7 @@ def call(Map<String, Object> config) {
                         args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
                     }
                 }
-                steps {
 
-                }
                 post {
                     failure {
                         script {
