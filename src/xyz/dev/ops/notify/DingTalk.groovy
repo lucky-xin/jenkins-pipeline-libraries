@@ -43,7 +43,7 @@ def post(Map<String, Object> config) {
                     "- 任务名称：${env.JOB_NAME}",
                     "- 任务状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'}>${currentBuild.currentResult}</font>",
                     params.reason.isEmpty() ? "" : "- 失败原因：" + params.reason,
-                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 质量报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName})",
+                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 质量报告：[点击查看详情](http://8.145.35.103:9000/dashboard?id=${params.jobName})",
                     "- 构建日志：[点击查看详情](${env.BUILD_URL}console)",
                     "- 执行用户：${currentBuild.buildCauses.shortDescription}",
                     "### 更新记录:",
