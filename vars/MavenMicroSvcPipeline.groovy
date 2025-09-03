@@ -4,16 +4,14 @@ import xyz.dev.ops.notify.DingTalk
 
 def call(Map<String, Object> config) {
     // 设置默认值
-    def params = [
-            robotId               : config.robotId ?: '',
-            baseImage             : config.baseImage ?: "openjdk:17.0-slim",
-            buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
-            svcName               : config.svcName ?: "",
-            dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
-            k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
-            k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
-            k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""
-    ]
+    def params = [robotId               : config.robotId ?: '',
+                  baseImage             : config.baseImage ?: "openjdk:17.0-slim",
+                  buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
+                  svcName               : config.svcName ?: "",
+                  dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
+                  k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
+                  k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+                  k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -97,9 +95,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【Maven构建 & 代码审核】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【Maven构建 & 代码审核】失败！"
                             ])
                         }
                     }
@@ -119,7 +117,7 @@ def call(Map<String, Object> config) {
                           --build-arg JAR_FILE=${env.JAR_FILE} \
                           --build-arg APPLICATION_NAME=${env.SERVICE_NAME} \
                           -t ${fullImageName}:${env.VERSION} \
-                          --platform linux/amd64,linux/arm64 \
+                          --platform linux/amd64,linux/arm64/v8 \
                           --push \
                           .
                         """
@@ -129,9 +127,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【封装Docker镜像】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【封装Docker镜像】失败！"
                             ])
                         }
                     }
@@ -146,36 +144,36 @@ def call(Map<String, Object> config) {
                 }
                 steps {
                     script {
-//                        k8sDeployService.deploy([
-//                                robotId               : params.robotId,
-//                                serviceName           : env.SERVICE_NAME,
-//                                namespace             : env.NAMESPACE,
-//                                dockerRepository      : env.DOCKER_REPOSITORY,
-//                                imageName             : env.IMAGE_NAME,
-//                                version               : env.VERSION,
-//                                k8sServerUrl          : params.k8sServerUrl,
-//                                k8sDeployImage        : params.k8sDeployImage,
-//                                k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
-//                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
-//                        ])
+                        k8sDeployService.deploy([
+                                robotId               : params.robotId,
+                                serviceName           : env.SERVICE_NAME,
+                                namespace             : env.NAMESPACE,
+                                dockerRepository      : env.DOCKER_REPOSITORY,
+                                imageName             : env.IMAGE_NAME,
+                                version               : env.VERSION,
+                                k8sServerUrl          : params.k8sServerUrl,
+                                k8sDeployImage        : params.k8sDeployImage,
+                                k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
+                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
+                        ])
                     }
                 }
                 post {
                     success {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                sonarqubeServerUrl: "${params.sonarqubeServerUrl}",
+                                    robotId           : "${params.robotId}",
+                                    jobName           : "${env.SERVICE_NAME}",
+                                    sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
                             ])
                         }
                     }
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【k8s发布】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【k8s发布】失败！"
                             ])
                         }
                     }

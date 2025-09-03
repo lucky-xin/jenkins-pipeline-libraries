@@ -94,9 +94,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【Golang构建 & 代码审核】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【Golang构建 & 代码审核】失败！"
                             ])
                         }
                     }
@@ -171,9 +171,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【代码审核】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【代码审核】失败！"
                             ])
                         }
                     }
@@ -197,7 +197,7 @@ def call(Map<String, Object> config) {
                             if docker buildx version >/dev/null 2>&1 && docker buildx inspect jenkins-builder >/dev/null 2>&1; then
                                 echo "✅ 使用 buildx 构建镜像..."
                                 docker buildx build \
-                                  --platform linux/arm64/v8,linux/amd64 \
+                                  --platform linux/amd64,linux/arm64/v8 \
                                   --tag $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
                                   --push \
                                   .
@@ -216,9 +216,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【封装Docker】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【封装Docker】失败！"
                             ])
                         }
                     }
@@ -251,18 +251,18 @@ def call(Map<String, Object> config) {
                     success {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
+                                    robotId           : "${params.robotId}",
+                                    jobName           : "${env.SERVICE_NAME}",
+                                    sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
                             ])
                         }
                     }
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【k8s发布】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【k8s发布】失败！"
                             ])
                         }
                     }
