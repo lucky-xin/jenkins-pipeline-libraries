@@ -8,7 +8,7 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "golang:1.25",
                   svcName               : config.svcName ?: "",
                   version               : config.version ?: "1.0.0",
-                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "172.29.35.103:9000",
+                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "http://172.29.35.103:9000",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
@@ -38,26 +38,38 @@ def call(Map<String, Object> config) {
             GITLAB_HOST = 'lab.pistonint.com'
             NAMESPACE = 'micro-svc-dev'
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
-            SONARQUBE_TOKEN_SECRET = credentials('sonarqube-token-secret')
         }
         stages {
             stage("代码审核") {
                 agent {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
-                        args "-e SONAR_HOST_URL=\"${params.sonarqubeServerUrl}\" -e SONAR_TOKEN=\"${env.SONARQUBE_TOKEN_SECRET}\""
+                        args "-u root:root"
                     }
                 }
                 steps {
                     checkout scm
-                    sh """
-                       sonar-scanner \
-                       -Dsonar.projectKey=${env.SERVICE_NAME} \
-                       -Dsonar.sources=. \
-                       -Dsonar.projectName=${env.SERVICE_NAME} \
-                    """
-                    // -Dsonar.host.url=${params.sonarqubeServerUrl}
-                    // -Dsonar.login=cb4238366e2fb9b8a89324eef5581cdec439a36d
+                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                           sonar-scanner \
+                           -Dsonar.projectKey=${env.SERVICE_NAME} \
+                           -Dsonar.sources=. \
+                           -Dsonar.projectName=${env.SERVICE_NAME} \
+                           -Dsonar.host.url=${params.sonarqubeServerUrl} \
+                           -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
+                }
+                post {
+                    failure {
+                        script {
+                            dingTalk.post(
+                                    "${params.robotId}",
+                                    "${env.SERVICE_NAME}",
+                                    "【代码审核】失败！"
+                            )
+                        }
+                    }
                 }
             }
             stage("Golang构建") {
