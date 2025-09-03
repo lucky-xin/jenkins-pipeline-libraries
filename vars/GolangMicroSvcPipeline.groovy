@@ -149,8 +149,9 @@ def call(Map<String, Object> config) {
                                 ls -la
                                 docker run --rm -u root:root \\
                                     -v ./:/usr/src \\
-                                    --entrypoint "sonar-scanner -Dsonar.sources=/usr/src -Dsonar.projectVersion=${env.VERSION} -Dsonar.projectName=${env.SERVICE_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=${params.sonarqubeServerUrl} -Dsonar.login=${SONAR_TOKEN} -Dsonar.projectKey=${env.SERVICE_NAME}" \\
-                                    sonarsource/sonar-scanner-cli:latest
+                                    --entrypoint /bin/sh \\
+                                    sonarsource/sonar-scanner-cli:latest \\
+                                    -c "sonar-scanner -Dsonar.sources=/usr/src -Dsonar.projectVersion=${env.VERSION} -Dsonar.projectName=${env.SERVICE_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=${params.sonarqubeServerUrl} -Dsonar.login=${SONAR_TOKEN} -Dsonar.projectKey=${env.SERVICE_NAME}"
                                 echo 'SonarQube 代码扫描完成'
                             """
                         }
