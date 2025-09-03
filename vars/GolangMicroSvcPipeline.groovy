@@ -106,36 +106,37 @@ def call(Map<String, Object> config) {
                 agent {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root --entrypoint \"\""
+                        args "-u root:root --entrypoint /bin/sh"
                         reuseNode true
                     }
                 }
                 steps {
                     withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
                         script {
-                            sh "echo '开始生成配置文件...'"
+                            echo '生成配置文件...'
+
                             // 生成 sonar-scanner.properties 文件
                             def sonarProperties = """
                             # SonarQube 项目配置
-                            sonar.projectKey=${SERVICE_NAME}
-                            sonar.projectName=${SERVICE_NAME}
-                            sonar.projectVersion=${VERSION}
-
+                            sonar.projectKey=${env.SERVICE_NAME}
+                            sonar.projectName=${env.SERVICE_NAME}
+                            sonar.projectVersion=${env.VERSION}
+                            
                             # 源码配置
                             sonar.sources=.
                             sonar.exclusions=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/**
-
+                            
                             # Go 语言配置
                             sonar.go.coverage.reportPaths=coverage.out
                             sonar.go.tests.reportPaths=test-report.xml
-
+                            
                             # 编码配置
                             sonar.sourceEncoding=UTF-8
-
+                            
                             # SonarQube 服务器配置
                             sonar.host.url=${params.sonarqubeServerUrl}
                             sonar.login=${SONAR_TOKEN}
-
+                            
                             # 其他配置
                             sonar.verbose=true
                             sonar.log.level=INFO
