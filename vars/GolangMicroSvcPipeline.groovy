@@ -106,7 +106,7 @@ def call(Map<String, Object> config) {
                 agent {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
+                        args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
                         reuseNode true
                     }
                 }
