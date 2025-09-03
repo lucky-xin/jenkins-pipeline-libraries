@@ -43,7 +43,7 @@ def post(Map<String, Object> config) {
                     "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
                     "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
                     params.reason.isEmpty() ? "" : "- 原因：" + params.reason,
-                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 代码质量报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName})",
+                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 代码质量报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName}console)",
                     "- 执行：${currentBuild.buildCauses.shortDescription}",
                     "- 日志：[点击查看详情](${env.BUILD_URL}console)",
                     "### 更新记录:",
