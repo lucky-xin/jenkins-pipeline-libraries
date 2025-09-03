@@ -40,12 +40,12 @@ def post(Map<String, Object> config) {
             text: [
                     "# [${params.jobName}](${env.RUN_DISPLAY_URL})",
                     "------",
-                    "- 任务：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
-                    "- 状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
-                    params.reason.isEmpty() ? "" : "- 原因：" + params.reason,
-                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName})",
-                    "- 执行：${currentBuild.buildCauses.shortDescription}",
-                    "- 日志：[点击查看详情](${env.BUILD_URL}console)",
+                    "- 任务名称：${env.JOB_NAME}",  // 部署至dev 任务 + 的环境
+                    "- 任务状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'} >${currentBuild.currentResult}</font>",
+                    params.reason.isEmpty() ? "" : "- 失败原因：" + params.reason,
+                    params.sonarqubeServerUrl.isEmpty() ? "" : "- 质量报告：[点击查看详情](" + params.sonarqubeServerUrl + "/dashboard?id=${params.jobName})",
+                    "- 构建日志：[点击查看详情](${env.BUILD_URL}console)",
+                    "- 执行用户：${currentBuild.buildCauses.shortDescription}",
                     "### 更新记录:",
                     "${changeString}"
             ],
