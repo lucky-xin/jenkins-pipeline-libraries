@@ -93,9 +93,11 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post("${robotId}",
+                            dingTalk.post(
+                                    "${robotId}",
                                     "${env.SERVICE_NAME}",
-                                    "【Golang构建 & 代码审核】失败！")
+                                    "【Golang构建 & 代码审核】失败！"
+                            )
                         }
                     }
                 }
@@ -105,6 +107,7 @@ def call(Map<String, Object> config) {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
                         args "-u root:root -e SONAR_HOST_URL=${params.sonarqubeServerUrl} -e SONAR_TOKEN=${env.SONAR_TOKEN} -v ./:/usr/src -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties"
+                        reuseNode true
                     }
                 }
                 steps {
@@ -195,13 +198,15 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
-                            dingTalk.post("${params.robotId}",
+                            dingTalk.post(
+                                    "${params.robotId}",
                                     "${env.SERVICE_NAME}")
                         }
                     }
                     failure {
                         script {
-                            dingTalk.post("${params.robotId}",
+                            dingTalk.post(
+                                    "${params.robotId}",
                                     "${env.SERVICE_NAME}",
                                     "【k8s发布】失败！")
                         }
