@@ -147,7 +147,7 @@ def call(Map<String, Object> config) {
                             sh """
                                 echo '开始执行 SonarQube 代码扫描...'
                                 docker run --rm -u root:root \\
-                                    -v \$(pwd):/usr/src \\
+                                    -v ./:/usr/src \\
                                     -v ./sonar-scanner.properties:/opt/sonar-scanner/conf/sonar-scanner.properties \\
                                     -w /usr/src \\
                                     sonarsource/sonar-scanner-cli:latest \\
