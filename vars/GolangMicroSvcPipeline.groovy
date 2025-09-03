@@ -103,59 +103,55 @@ def call(Map<String, Object> config) {
                 }
             }
             stage("代码审核") {
-                agent {
-                    docker {
-                        image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root --entrypoint /bin/sh"
-                        reuseNode true
-                    }
-                }
                 steps {
-                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            echo '生成配置文件...'
+                    script {
+                        echo '开始代码审核...'
+                        
+                        // 使用 docker 步骤而不是 agent
+                        docker.image("sonarsource/sonar-scanner-cli:latest").inside("-u root:root") {
+                            withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
+                                // 生成 sonar-scanner.properties 文件
+                                def sonarProperties = """
+                                # SonarQube 项目配置
+                                sonar.projectKey=${env.SERVICE_NAME}
+                                sonar.projectName=${env.SERVICE_NAME}
+                                sonar.projectVersion=${env.VERSION}
 
-                            // 生成 sonar-scanner.properties 文件
-                            def sonarProperties = """
-                            # SonarQube 项目配置
-                            sonar.projectKey=${env.SERVICE_NAME}
-                            sonar.projectName=${env.SERVICE_NAME}
-                            sonar.projectVersion=${env.VERSION}
-                            
-                            # 源码配置
-                            sonar.sources=.
-                            sonar.exclusions=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/**
-                            
-                            # Go 语言配置
-                            sonar.go.coverage.reportPaths=coverage.out
-                            sonar.go.tests.reportPaths=test-report.xml
-                            
-                            # 编码配置
-                            sonar.sourceEncoding=UTF-8
-                            
-                            # SonarQube 服务器配置
-                            sonar.host.url=${params.sonarqubeServerUrl}
-                            sonar.login=${SONAR_TOKEN}
-                            
-                            # 其他配置
-                            sonar.verbose=true
-                            sonar.log.level=INFO
-                            """
-                            
-                            // 写入 sonar-scanner.properties 文件
-                            writeFile file: 'sonar-scanner.properties', text: sonarProperties
-                            echo '已生成 sonar-scanner.properties 文件'
-                            
-                            // 显示配置文件内容（隐藏敏感信息）
-                            def displayProperties = sonarProperties.replaceAll(/sonar\.login=.*/, 'sonar.login=****')
-                            echo "配置文件内容：\n${displayProperties}"
-                            
-                            // 执行 sonar-scanner 命令
-                            sh """
-                                echo '开始执行 SonarQube 代码扫描...'
-                                sonar-scanner -Dproject.settings=./sonar-scanner.properties
-                                echo 'SonarQube 代码扫描完成'
-                            """
+                                # 源码配置
+                                sonar.sources=.
+                                sonar.exclusions=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/**
+
+                                # Go 语言配置
+                                sonar.go.coverage.reportPaths=coverage.out
+                                sonar.go.tests.reportPaths=test-report.xml
+
+                                # 编码配置
+                                sonar.sourceEncoding=UTF-8
+
+                                # SonarQube 服务器配置
+                                sonar.host.url=${params.sonarqubeServerUrl}
+                                sonar.login=${SONAR_TOKEN}
+
+                                # 其他配置
+                                sonar.verbose=true
+                                sonar.log.level=INFO
+                                """
+                                
+                                // 写入 sonar-scanner.properties 文件
+                                writeFile file: 'sonar-scanner.properties', text: sonarProperties
+                                echo '已生成 sonar-scanner.properties 文件'
+                                
+                                // 显示配置文件内容（隐藏敏感信息）
+                                def displayProperties = sonarProperties.replaceAll(/sonar\.login=.*/, 'sonar.login=****')
+                                echo "配置文件内容：\n${displayProperties}"
+                                
+                                // 执行 sonar-scanner 命令
+                                sh """
+                                    echo '开始执行 SonarQube 代码扫描...'
+                                    sonar-scanner -Dproject.settings=./sonar-scanner.properties
+                                    echo 'SonarQube 代码扫描完成'
+                                """
+                            }
                         }
                     }
                 }
