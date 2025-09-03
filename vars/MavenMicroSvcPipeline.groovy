@@ -82,13 +82,13 @@ def call(Map<String, Object> config) {
                             echo "JAR文件: ${env.JAR_FILE}"
                         }
 
-                        sh '''
+                        sh """
                         # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
-                        mvn -s "$MAVEN_SETTINGS" package -DskipTests=true
+                        mvn -B -s "$MAVEN_SETTINGS" package sonar:sonar -Dsonar.projectKey=${env.SERVICE_NAME}
 
                         # 验证JAR文件是否生成
                         ls -la target/*.jar
-                        '''
+                        """
                     }
                 }
                 post {
