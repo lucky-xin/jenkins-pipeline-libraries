@@ -117,9 +117,9 @@ def call(Map<String, Object> config) {
                             // 生成 sonar-scanner.properties 文件
                             def sonarProperties = """
                             # SonarQube 项目配置
-                            sonar.projectKey=${env.SERVICE_NAME}
-                            sonar.projectName=${env.SERVICE_NAME}
-                            sonar.projectVersion=${env.VERSION}
+                            sonar.projectKey=${SERVICE_NAME}
+                            sonar.projectName=${SERVICE_NAME}
+                            sonar.projectVersion=${VERSION}
 
                             # 源码配置
                             sonar.sources=.
