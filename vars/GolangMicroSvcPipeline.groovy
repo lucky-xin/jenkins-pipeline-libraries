@@ -106,13 +106,14 @@ def call(Map<String, Object> config) {
                 agent {
                     docker {
                         image "sonarsource/sonar-scanner-cli:latest"
-                        args "-u root:root -v ./:/usr/src --entrypoint \"\""
+                        args "-u root:root --entrypoint \"\""
                         reuseNode true
                     }
                 }
                 steps {
                     withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
                         script {
+                            sh "echo '开始生成配置文件...'"
                             // 生成 sonar-scanner.properties 文件
                             def sonarProperties = """
                             # SonarQube 项目配置
