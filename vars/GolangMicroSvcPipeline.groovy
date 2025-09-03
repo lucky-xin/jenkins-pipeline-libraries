@@ -148,11 +148,24 @@ def call(Map<String, Object> config) {
                                 echo '开始执行 SonarQube 代码扫描...'
                                 ls -la
                                 docker run --rm -u root:root \\
-                                    --platform linux/amd64 \\
                                     -v ./:/usr/src \\
-                                    --entrypoint /bin/sh \\
-                                    sonarsource/sonar-scanner-cli:latest \\
-                                    -c "sonar-scanner -Dsonar.sources=/usr/src -Dsonar.projectVersion=${env.VERSION} -Dsonar.projectName=${env.SERVICE_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=${params.sonarqubeServerUrl} -Dsonar.login=${SONAR_TOKEN} -Dsonar.projectKey=${env.SERVICE_NAME}"
+                                    -e SONAR_TOKEN=${SONAR_TOKEN} \\
+                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \\
+                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \\
+                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \\
+                                    -e SONAR_SOURCE_ENCODING=UTF-8 \\
+                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \\
+                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \\
+                                    -e SONAR_SOURCES=/usr/src \\
+                                    -e SONAR_TESTS=/usr/src \\
+                                    -e SONAR_GO_COVERAGE_REPORT_PATHS=coverage.out \\
+                                    -e SONAR_GO_TESTS_REPORT_PATHS=test-report.xml \\
+                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \\
+                                    -e SONAR_INCLUSIONS=**/*.go \\
+                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \\
+                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \\
+                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go 
+                                    xin8/sonar-scanner-cli:latest
                                 echo 'SonarQube 代码扫描完成'
                             """
                         }
