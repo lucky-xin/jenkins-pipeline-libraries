@@ -175,36 +175,30 @@ def call(Map<String, Object> config) {
                     if [ -f "node_modules/rollup/dist/native.js" ]; then
                         echo "备份并替换顶级 Rollup native.js 文件"
                         cp node_modules/rollup/dist/native.js node_modules/rollup/dist/native.js.backup
-                        cat > node_modules/rollup/dist/native.js << 'EOF'
-// 禁用原生模块，强制使用 JavaScript 实现
+                        echo '// 禁用原生模块，强制使用 JavaScript 实现
 module.exports = function() {
-    throw new Error('Native module disabled - using JavaScript implementation');
-};
-EOF
+    throw new Error("Native module disabled - using JavaScript implementation");
+};' > node_modules/rollup/dist/native.js
                     fi
                     
                     # 处理 Vite 子依赖中的 Rollup
                     if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
                         echo "备份并替换 Vite 子依赖中的 Rollup native.js 文件"
                         cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
-                        cat > node_modules/vite/node_modules/rollup/dist/native.js << 'EOF'
-// 禁用原生模块，强制使用 JavaScript 实现
+                        echo '// 禁用原生模块，强制使用 JavaScript 实现
 module.exports = function() {
-    throw new Error('Native module disabled - using JavaScript implementation');
-};
-EOF
+    throw new Error("Native module disabled - using JavaScript implementation");
+};' > node_modules/vite/node_modules/rollup/dist/native.js
                     fi
                     
                     # 查找并处理所有可能的 Rollup 实例
                     find node_modules -name "native.js" -path "*/rollup/dist/*" -exec sh -c '
                         echo "处理 Rollup native.js 文件: \$1"
                         cp "\$1" "\$1.backup"
-                        cat > "\$1" << "EOF"
-// 禁用原生模块，强制使用 JavaScript 实现
+                        echo '// 禁用原生模块，强制使用 JavaScript 实现
 module.exports = function() {
     throw new Error("Native module disabled - using JavaScript implementation");
-};
-EOF
+};' > "\$1"
                      _ {} \\;
                     
                     # 优化的构建过程
