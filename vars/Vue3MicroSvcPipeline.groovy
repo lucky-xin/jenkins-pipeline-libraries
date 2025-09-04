@@ -66,160 +66,28 @@ def call(Map<String, Object> config) {
                 steps {
                     echo '开始使用 Node 构建前端...'
                     checkout scm
-                    sh label: 'Optimized Node build in container', script: """
-                    set -eux
-                    
-                    # 显示系统信息
-                    echo "=== 系统信息 ==="
-                    node -v
-                    npm -v
-                    echo "CPU 核心数: \$(nproc)"
-                    echo "内存信息: \$(free -h)"
-                    echo "磁盘空间: \$(df -h /)"
-                    
-                    # 启用 corepack 并准备 yarn
-                    corepack enable
-                    corepack prepare yarn@1.22.22 --activate
-                    
-                    # 设置环境变量优化
-                    export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-                    export YARN_TIMEOUT=300000
-                    export YARN_NETWORK_TIMEOUT=300000
-                    export YARN_NETWORK_CONCURRENCY=16
-                    export YARN_PREFER_OFFLINE=true
-                    export YARN_CACHE_FOLDER=\$YARN_CACHE_FOLDER
-                    export NPM_CONFIG_CACHE=\$NPM_CONFIG_CACHE
-                    export NPM_CONFIG_PREFER_OFFLINE=true
-                    export NPM_CONFIG_AUDIT=false
-                    export NPM_CONFIG_FUND=false
-                    
-                    # 配置 yarn 优化设置
-                    echo "=== 配置 Yarn ==="
-                    yarn config set registry https://registry.npmmirror.com
-                    yarn config set network-concurrency 16
-                    yarn config set prefer-offline true
-                    yarn config set cache-folder \$YARN_CACHE_FOLDER
-                    yarn config set network-timeout 300000
-                    yarn config set child-concurrency 8
-                    yarn config set enable-progress-bars false
-                    yarn config set enable-emoji false
-                    
-                    # 配置 npm 优化设置
-                    echo "=== 配置 NPM ==="
-                    npm config set prefer-offline true
-                    npm config set audit false
-                    npm config set fund false
-                    npm config set cache \$NPM_CONFIG_CACHE
-                    
-                    # 清理可能的缓存问题
-                    echo "=== 清理缓存和依赖 ==="
-                    rm -rf node_modules package-lock.json yarn.lock || true
-                    yarn cache clean --force || true
-                    npm cache clean --force || true
-                    
-                    # 优化的依赖安装
-                    echo "=== 开始安装依赖 ==="
-                    # 使用 npm 安装，排除可选依赖
-                    echo "使用 npm 安装依赖（排除可选依赖）..."
-                    time npm install \
-                        --omit=optional \
-                        --prefer-offline \
-                        --no-audit \
-                        --no-fund \
-                        --force
-                    
-                    # 如果 npm 安装失败，回退到 yarn
-                    if [ \$? -ne 0 ]; then
-                        echo "npm 安装失败，回退到 yarn..."
-                        time yarn install \
-                            --network-timeout 300000 \
-                            --prefer-offline \
-                            --silent \
-                            --ignore-engines \
-                            --ignore-optional \
-                            --non-interactive \
-                            --force
-                    fi
-                    
-                    echo "=== 依赖安装完成 ==="
-                    echo "node_modules 大小: \$(du -sh node_modules 2>/dev/null || echo 'N/A')"
-
-                    # 修复 Rollup 架构问题
-                    echo "=== 修复 Rollup 架构问题 ==="
-                    
-                    # 方法1: 强制安装正确的 Rollup 原生模块
-                    npm install @rollup/rollup-linux-x64-musl --no-save --force --omit=optional || echo "x64 musl 模块安装失败"
-                    npm install @rollup/rollup-linux-x64-gnu --no-save --force --omit=optional || echo "x64 gnu 模块安装失败"
-                    
-                    # 方法1.5: 强制安装 ARM64 模块（如果存在）
-                    npm install @rollup/rollup-linux-arm64-musl --no-save --force --omit=optional || echo "ARM64 musl 模块安装失败"
-                    npm install @rollup/rollup-linux-arm64-gnu --no-save --force --omit=optional || echo "ARM64 gnu 模块安装失败"
-                    
-                    # 方法2: 创建符号链接，让 ARM64 模块指向 x64 模块
-                    if [ -d "node_modules/@rollup/rollup-linux-x64-musl" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-musl" ]; then
-                        echo "创建 ARM64 musl 到 x64 musl 的符号链接"
-                        mkdir -p node_modules/@rollup
-                        ln -sf rollup-linux-x64-musl node_modules/@rollup/rollup-linux-arm64-musl
-                    fi
-                    
-                    if [ -d "node_modules/@rollup/rollup-linux-x64-gnu" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-gnu" ]; then
-                        echo "创建 ARM64 gnu 到 x64 gnu 的符号链接"
-                        mkdir -p node_modules/@rollup
-                        ln -sf rollup-linux-x64-gnu node_modules/@rollup/rollup-linux-arm64-gnu
-                    fi
-                    
-                    # 方法3: 直接替换所有 Rollup 的原生模块文件，强制使用 JavaScript 实现
-                    echo "查找并替换所有 Rollup native.js 文件"
-                    
-                    # 处理顶级 Rollup 依赖
-                    if [ -f "node_modules/rollup/dist/native.js" ]; then
-                        echo "备份并替换顶级 Rollup native.js 文件"
-                        cp node_modules/rollup/dist/native.js node_modules/rollup/dist/native.js.backup
-                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/rollup/dist/native.js
-                        echo "module.exports = function() {" >> node_modules/rollup/dist/native.js
-                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> node_modules/rollup/dist/native.js
-                        echo "};" >> node_modules/rollup/dist/native.js
-                    fi
-                    
-                    # 处理 Vite 子依赖中的 Rollup
-                    if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
-                        echo "备份并替换 Vite 子依赖中的 Rollup native.js 文件"
-                        cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
-                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/vite/node_modules/rollup/dist/native.js
-                        echo "module.exports = function() {" >> node_modules/vite/node_modules/rollup/dist/native.js
-                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> node_modules/vite/node_modules/rollup/dist/native.js
-                        echo "};" >> node_modules/vite/node_modules/rollup/dist/native.js
-                    fi
-                    
-                    # 查找并处理所有可能的 Rollup 实例
-                    find node_modules -name "native.js" -path "*/rollup/dist/*" -exec sh -c '
-                        echo "处理 Rollup native.js 文件: \$1"
-                        cp "\$1" "\$1.backup"
-                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > "\$1"
-                        echo "module.exports = function() {" >> "\$1"
-                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> "\$1"
-                        echo "};" >> "\$1"
-                     _ {} \\;
-                    
-                    # 优化的构建过程
-                    echo "=== 开始构建 ==="
-                    export NODE_OPTIONS="--max-old-space-size=4096 --max-semi-space-size=128"
-                    export NODE_ENV=production
-                    export ROLLUP_PLATFORM="linux"
-                    export ROLLUP_ARCH="x64"
-                    export ROLLUP_DISABLE_NATIVE="true"
-                    export ROLLUP_NATIVE_DISABLE="1"
-                    # 强制 Rollup 使用 JavaScript 实现
-                    export ROLLUP_FORCE_JS="true"
-                    export ROLLUP_USE_JS="1"
-                    
-                    # 使用并行构建和优化选项
-                    time yarn build --mode production
-                    
-                    echo "=== 构建完成 ==="
-                    test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
-                    echo "构建产物大小: \$(du -sh dist 2>/dev/null || echo 'N/A')"
-                """
+                    sh label: "Node build in container", script: """
+                        set -eux
+                        # 设置 Node.js 内存限制，避免堆内存溢出
+                        export NODE_OPTIONS="--max-old-space-size=4096"
+                            
+                        node -v
+                        corepack enable
+                        corepack prepare yarn@1.22.22 --activate
+    
+                        export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+                        export YARN_TIMEOUT=600000
+    
+                        yarn config set registry https://registry.npmmirror.com
+                        yarn config set network-concurrency 8
+                        yarn config set prefer-offline true
+                        yarn config set cache-folder /root/.cache/yarn
+    
+                        yarn install --frozen-lockfile --network-timeout 600000 --prefer-offline
+                        yarn build
+    
+                        test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
+                    """
                 }
                 post {
                     failure {
