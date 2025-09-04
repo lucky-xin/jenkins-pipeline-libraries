@@ -197,9 +197,9 @@ EOF
                     
                     # 查找并处理所有可能的 Rollup 实例
                     find node_modules -name "native.js" -path "*/rollup/dist/*" -exec sh -c '
-                        echo "处理 Rollup native.js 文件: $1"
-                        cp "$1" "$1.backup"
-                        cat > "$1" << "EOF"
+                        echo "处理 Rollup native.js 文件: \$1"
+                        cp "\$1" "\$1.backup"
+                        cat > "\$1" << "EOF"
 // 禁用原生模块，强制使用 JavaScript 实现
 module.exports = function() {
     throw new Error("Native module disabled - using JavaScript implementation");
