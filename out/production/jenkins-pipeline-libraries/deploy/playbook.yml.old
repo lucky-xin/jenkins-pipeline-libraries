@@ -1,0 +1,16 @@
+---
+- hosts: "{{ deploy_host }}"
+  vars:
+    _docker_debug_logs: "{{ docker_debug_logs }}"
+  roles:
+    - role: pistonint-ops_docker-container
+      become: yes
+
+# 流程:
+#  svc docker 发布 -> pdns -> nginx
+#  二期工程 :
+#  K8s 发布 -> pdns -> nginx
+
+# https://github.com/Nosmoht/ansible-module-powerdns
+
+

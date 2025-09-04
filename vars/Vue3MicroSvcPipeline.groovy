@@ -177,7 +177,7 @@ def call(Map<String, Object> config) {
                         cp node_modules/rollup/dist/native.js node_modules/rollup/dist/native.js.backup
                         echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/rollup/dist/native.js
                         echo "module.exports = function() {" >> node_modules/rollup/dist/native.js
-                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> node_modules/rollup/dist/native.js
+                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> node_modules/rollup/dist/native.js
                         echo "};" >> node_modules/rollup/dist/native.js
                     fi
                     
@@ -187,7 +187,7 @@ def call(Map<String, Object> config) {
                         cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
                         echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/vite/node_modules/rollup/dist/native.js
                         echo "module.exports = function() {" >> node_modules/vite/node_modules/rollup/dist/native.js
-                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> node_modules/vite/node_modules/rollup/dist/native.js
+                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> node_modules/vite/node_modules/rollup/dist/native.js
                         echo "};" >> node_modules/vite/node_modules/rollup/dist/native.js
                     fi
                     
@@ -197,7 +197,7 @@ def call(Map<String, Object> config) {
                         cp "\$1" "\$1.backup"
                         echo "// 禁用原生模块，强制使用 JavaScript 实现" > "\$1"
                         echo "module.exports = function() {" >> "\$1"
-                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> "\$1"
+                        echo "    throw new Error(\\\"Native module disabled - using JavaScript implementation\\\");" >> "\$1"
                         echo "};" >> "\$1"
                      _ {} \\;
                     

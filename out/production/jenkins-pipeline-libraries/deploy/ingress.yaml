@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: templet
+  namespace: templet
+spec:
+  rules:
+  - host: templet.svc.pistonint.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: templet
+            port:
+              number: 21080
+  ingressClassName: pistonint-nginx
