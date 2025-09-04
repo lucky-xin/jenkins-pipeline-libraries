@@ -102,12 +102,12 @@ def call(Map<String, Object> config) {
                     yarn config set enable-progress-bars false
                     yarn config set enable-emoji false
                     
-                    # 配置 npm 禁用可选依赖
+                    # 配置 npm 优化设置
                     echo "=== 配置 NPM ==="
-                    npm config set optional false
                     npm config set prefer-offline true
                     npm config set audit false
                     npm config set fund false
+                    npm config set cache /root/.npm
                     
                     # 清理可能的缓存问题
                     echo "=== 清理缓存和依赖 ==="
@@ -117,14 +117,27 @@ def call(Map<String, Object> config) {
                     
                     # 优化的依赖安装
                     echo "=== 开始安装依赖 ==="
-                    time yarn install \
-                        --network-timeout 300000 \
+                    # 使用 npm 安装，排除可选依赖
+                    echo "使用 npm 安装依赖（排除可选依赖）..."
+                    time npm install \
+                        --omit=optional \
                         --prefer-offline \
-                        --silent \
-                        --ignore-engines \
-                        --ignore-optional \
-                        --non-interactive \
+                        --no-audit \
+                        --no-fund \
                         --force
+                    
+                    # 如果 npm 安装失败，回退到 yarn
+                    if [ $? -ne 0 ]; then
+                        echo "npm 安装失败，回退到 yarn..."
+                        time yarn install \
+                            --network-timeout 300000 \
+                            --prefer-offline \
+                            --silent \
+                            --ignore-engines \
+                            --ignore-optional \
+                            --non-interactive \
+                            --force
+                    fi
                     
                     echo "=== 依赖安装完成 ==="
                     echo "node_modules 大小: \$(du -sh node_modules 2>/dev/null || echo 'N/A')"
@@ -133,8 +146,8 @@ def call(Map<String, Object> config) {
                     echo "=== 修复 Rollup 架构问题 ==="
                     
                     # 方法1: 强制安装正确的 Rollup 原生模块
-                    npm install @rollup/rollup-linux-x64-musl --no-save --force || echo "x64 musl 模块安装失败"
-                    npm install @rollup/rollup-linux-x64-gnu --no-save --force || echo "x64 gnu 模块安装失败"
+                    npm install @rollup/rollup-linux-x64-musl --no-save --force --omit=optional || echo "x64 musl 模块安装失败"
+                    npm install @rollup/rollup-linux-x64-gnu --no-save --force --omit=optional || echo "x64 gnu 模块安装失败"
                     
                     # 方法2: 创建符号链接，让 ARM64 模块指向 x64 模块
                     if [ -d "node_modules/@rollup/rollup-linux-x64-musl" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-musl" ]; then
