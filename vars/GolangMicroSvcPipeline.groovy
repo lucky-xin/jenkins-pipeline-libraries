@@ -6,10 +6,10 @@ def call(Map<String, Object> config) {
     def params = [robotId               : config.robotId ?: '',
                   baseImage             : config.baseImage ?: "alpine:latest",
                   buildImage            : config.buildImage ?: "golang:1.25",
-                  svcName               : config.svcName ?: "",
-                  version               : config.version ?: "1.0.0",
-                  sqServerUrl           : config.sqServerUrl ?: "http://172.29.35.103:9000",
-                  sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
+                  svcName       : config.svcName ?: "",//微服务名称，规范【小写英文字母，数字，中划线'-'】
+                  version       : config.version ?: "1.0.0",//大版本号，最终的版本号为：大版本号-【Git Commot id】
+                  sqServerUrl   : config.sqServerUrl ?: "http://172.29.35.103:9000",//SonarQube内网地址
+                  sqDashboardUrl: config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
@@ -30,16 +30,18 @@ def call(Map<String, Object> config) {
         environment {
             BUILD_ARGS = "-u root:root -v $HOME/.cache/go-build/:/tmp/.cache/go-build/"  //本地仓库挂载
             SERVICE_NAME = "${params.svcName}"  //服务名称
-            COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
-            VERSION = "${params.version}-${COMMIT_ID}" //版本
+            // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
+            VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT}"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
+            // 镜像名称
             IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
             GITLAB_HOST = 'lab.pistonint.com'
+            // k8s命名空间
             NAMESPACE = 'micro-svc-dev'
+            // k8s部署文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
-            SONAR_TOKEN = credentials('sonarqube-token-secret')
         }
         stages {
             stage("代码审核") {
@@ -47,12 +49,9 @@ def call(Map<String, Object> config) {
                     checkout scm
                     withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
                         script {
-                            echo 'ls -la'
-
                             // 使用 sh 命令直接运行 Docker 容器
                             sh """
                                 echo '开始执行 SonarQube 代码扫描...'
-                                ls -la
                                 docker run --rm -u root:root \
                                     -v ./:/usr/src \
                                     -e SONAR_TOKEN=${SONAR_TOKEN} \
@@ -120,8 +119,6 @@ def call(Map<String, Object> config) {
                         echo "=================="
                         go build -ldflags="-w -s" -o main main.go
                         
-                        ls -la
-
                         # 清理 git 临时凭据映射（避免后续泄露）
                         git config --global --unset-all url."https://$GIT_USERNAME:$GIT_PASSWORD@${GITLAB_HOST}/".insteadOf || true
                     """
@@ -143,10 +140,6 @@ def call(Map<String, Object> config) {
                 steps {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
-
-                        if ("${env.BRANCH_NAME}" == "pre") {
-                            env.VERSION = "v${env.VERSION}"
-                        }
                         withCredentials([usernamePassword(
                                 credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'REGISTRY_USERNAME',
