@@ -38,11 +38,11 @@ class K8sDeployService implements Serializable {
                     script.sh "cat deployment.tpl"
                     def deployTemplate = script.readFile(encoding: "UTF-8", file: "deployment.tpl")
                     def deployment = deployTemplate
-                            .replaceAll("\$\\{APP_NAME\\}", params.serviceName)
-                            .replaceAll("\$\\{NAMESPACE\\}", params.namespace)
-                            .replaceAll("\$\\{DOCKER_REPOSITORY\\}", params.dockerRepository)
-                            .replaceAll("\$\\{IMAGE_NAME\\}", params.imageName)
-                            .replaceAll("\$\\{VERSION\\}", params.version)
+                            .replaceAll('${APP_NAME}', params.serviceName)
+                            .replaceAll('${NAMESPACE}', params.namespace)
+                            .replaceAll('${DOCKER_REPOSITORY}', params.dockerRepository)
+                            .replaceAll('${IMAGE_NAME}', params.imageName)
+                            .replaceAll('${VERSION}', params.version)
                     script.writeFile(encoding: 'UTF-8', file: './deploy.yaml', text: deployment)
                 }
 
