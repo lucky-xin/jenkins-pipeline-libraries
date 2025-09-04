@@ -8,6 +8,7 @@ def call(Map<String, Object> config) {
                   baseImage             : config.baseImage ?: "openjdk:17.0-slim",
                   buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
                   svcName               : config.svcName ?: "",
+                  sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
@@ -172,9 +173,9 @@ def call(Map<String, Object> config) {
                     success {
                         script {
                             dingTalk.post([
-                                    robotId           : "${params.robotId}",
-                                    jobName           : "${env.SERVICE_NAME}",
-                                    sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
+                                    robotId    : "${params.robotId}",
+                                    jobName    : "${env.SERVICE_NAME}",
+                                    sqServerUrl: "${params.sqDashboardUrl}"
                             ])
                         }
                     }
