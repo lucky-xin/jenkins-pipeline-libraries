@@ -75,7 +75,6 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            echo "当前阶段是：${env.STAGE_NAME}"
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
@@ -211,6 +210,7 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
+                            echo "当前阶段是：${env.STAGE_NAME}"
                             dingTalk.post([
                                     robotId    : "${params.robotId}",
                                     jobName    : "${env.SERVICE_NAME}",
