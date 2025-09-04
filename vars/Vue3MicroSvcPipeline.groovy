@@ -1,5 +1,4 @@
 import xyz.dev.ops.deploy.K8sDeployService
-import xyz.dev.ops.maven.MavenUtils
 import xyz.dev.ops.notify.DingTalk
 
 def call(Map<String, Object> config) {
@@ -141,14 +140,22 @@ def call(Map<String, Object> config) {
                 steps {
                     withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
                         script {
-                            echo '开始代码审核...'
-                            docker run --rm -u root:root \
-                                --platform linux/amd64 \
-                                -v ./:/usr/src \
-                                --entrypoint /bin/sh \
-                                sonarsource/sonar-scanner-cli:latest \
-                                -c "sonar-scanner -Dsonar.sources=/usr/src -Dsonar.projectVersion=${env.COMMIT_ID} -Dsonar.projectName=${env.SERVICE_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=${params.sonarqubeServerUrl} -Dsonar.login=${SONAR_TOKEN} -Dsonar.projectKey=${env.SERVICE_NAME} -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js"
-                            echo 'SonarQube 代码扫描完成'
+                            sh """
+                                echo '开始代码审核...'
+                                docker run --rm -u root:root \
+                                    -v ./:/usr/src \
+                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
+                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \
+                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
+                                    -e SONAR_EXCLUSIONS=**/node_modules/**,**/dist/**,**/*.min.js \
+                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
+                                    -e SONAR_SOURCES=/usr/src \
+                                    -e SONAR_TESTS=/usr/src \
+                                    xin8/sonar-scanner-cli:latest
+                                echo 'SonarQube 代码扫描完成'
+                            """
                         }
                     }
                 }

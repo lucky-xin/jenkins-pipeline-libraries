@@ -112,20 +112,20 @@ def call(Map<String, Object> config) {
                             sh """
                                 echo '开始执行 SonarQube 代码扫描...'
                                 ls -la
-                                docker run --rm -u root:root \\
-                                    -v ./:/usr/src \\
-                                    -e SONAR_TOKEN=${SONAR_TOKEN} \\
-                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \\
-                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \\
-                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \\
-                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \\
-                                    -e SONAR_SOURCE_ENCODING=UTF-8 \\
-                                    -e SONAR_SOURCES=/usr/src \\
-                                    -e SONAR_TESTS=/usr/src \\
-                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \\
-                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \\
-                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \\
-                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \\
+                                docker run --rm -u root:root \
+                                    -v ./:/usr/src \
+                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
+                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \
+                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
+                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
+                                    -e SONAR_SOURCES=/usr/src \
+                                    -e SONAR_TESTS=/usr/src \
+                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
+                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \
+                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \
+                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \
                                     xin8/sonar-scanner-cli:latest
                                 echo 'SonarQube 代码扫描完成'
                             """
