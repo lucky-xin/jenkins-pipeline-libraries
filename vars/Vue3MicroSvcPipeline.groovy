@@ -195,10 +195,10 @@ module.exports = function() {
                     find node_modules -name "native.js" -path "*/rollup/dist/*" -exec sh -c '
                         echo "处理 Rollup native.js 文件: \$1"
                         cp "\$1" "\$1.backup"
-                        echo '// 禁用原生模块，强制使用 JavaScript 实现
-module.exports = function() {
-    throw new Error("Native module disabled - using JavaScript implementation");
-};' > "\$1"
+                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > "\$1"
+                        echo "module.exports = function() {" >> "\$1"
+                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> "\$1"
+                        echo "};" >> "\$1"
                      _ {} \\;
                     
                     # 优化的构建过程
