@@ -87,8 +87,8 @@ def call(Map<String, Object> config) {
                     export YARN_NETWORK_TIMEOUT=300000
                     export YARN_NETWORK_CONCURRENCY=16
                     export YARN_PREFER_OFFLINE=true
-                    export YARN_CACHE_FOLDER=${env.YARN_CACHE_FOLDER}
-                    export NPM_CONFIG_CACHE=${env.NPM_CONFIG_CACHE}
+                    export YARN_CACHE_FOLDER=\${env.YARN_CACHE_FOLDER}
+                    export NPM_CONFIG_CACHE=\${env.NPM_CONFIG_CACHE}
                     export NPM_CONFIG_PREFER_OFFLINE=true
                     export NPM_CONFIG_AUDIT=false
                     export NPM_CONFIG_FUND=false
@@ -98,7 +98,7 @@ def call(Map<String, Object> config) {
                     yarn config set registry https://registry.npmmirror.com
                     yarn config set network-concurrency 16
                     yarn config set prefer-offline true
-                    yarn config set cache-folder ${env.YARN_CACHE_FOLDER}
+                    yarn config set cache-folder \${env.YARN_CACHE_FOLDER}
                     yarn config set network-timeout 300000
                     yarn config set child-concurrency 8
                     yarn config set enable-progress-bars false
@@ -109,7 +109,7 @@ def call(Map<String, Object> config) {
                     npm config set prefer-offline true
                     npm config set audit false
                     npm config set fund false
-                    npm config set cache ${env.NPM_CONFIG_CACHE}
+                    npm config set cache \${env.NPM_CONFIG_CACHE}
                     
                     # 清理可能的缓存问题
                     echo "=== 清理缓存和依赖 ==="
