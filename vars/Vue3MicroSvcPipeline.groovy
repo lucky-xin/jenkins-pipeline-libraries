@@ -47,6 +47,8 @@ def call(Map<String, Object> config) {
             ROLLUP_ARCH = "x64"
             // 强制 Rollup 使用 JavaScript 实现
             ROLLUP_DISABLE_NATIVE = "true"
+            // 禁用 Rollup 原生二进制文件
+            ROLLUP_NATIVE_DISABLE = "1"
         }
 
         stages {
@@ -100,6 +102,13 @@ def call(Map<String, Object> config) {
                     yarn config set enable-progress-bars false
                     yarn config set enable-emoji false
                     
+                    # 配置 npm 禁用可选依赖
+                    echo "=== 配置 NPM ==="
+                    npm config set optional false
+                    npm config set prefer-offline true
+                    npm config set audit false
+                    npm config set fund false
+                    
                     # 清理可能的缓存问题
                     echo "=== 清理缓存和依赖 ==="
                     rm -rf node_modules package-lock.json yarn.lock || true
@@ -140,10 +149,16 @@ def call(Map<String, Object> config) {
                         ln -sf rollup-linux-x64-gnu node_modules/@rollup/rollup-linux-arm64-gnu
                     fi
                     
-                    # 方法3: 修改 Rollup 的 native.js 文件，强制使用 JavaScript 实现
+                    # 方法3: 直接删除 Rollup 的原生模块文件，强制使用 JavaScript 实现
                     if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
-                        echo "修改 Rollup native.js 文件，禁用原生模块"
-                        sed -i 's/requireWithFriendlyError/function requireWithFriendlyError() { throw new Error("Native module disabled"); } requireWithFriendlyError/g' node_modules/vite/node_modules/rollup/dist/native.js || echo "修改 native.js 失败"
+                        echo "备份并替换 Rollup native.js 文件"
+                        cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
+                        cat > node_modules/vite/node_modules/rollup/dist/native.js << 'EOF'
+// 禁用原生模块，强制使用 JavaScript 实现
+module.exports = function() {
+    throw new Error('Native module disabled - using JavaScript implementation');
+};
+EOF
                     fi
                     
                     # 优化的构建过程
@@ -153,6 +168,7 @@ def call(Map<String, Object> config) {
                     export ROLLUP_PLATFORM="linux"
                     export ROLLUP_ARCH="x64"
                     export ROLLUP_DISABLE_NATIVE="true"
+                    export ROLLUP_NATIVE_DISABLE="1"
                     
                     # 使用并行构建和优化选项
                     time yarn build --mode production
