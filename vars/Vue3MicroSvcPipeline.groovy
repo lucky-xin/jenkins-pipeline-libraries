@@ -31,7 +31,7 @@ def call(Map<String, Object> config) {
             NPM_CONFIG_CACHE = "/root/.npm"
 
             // Node.js 构建配置 - 优化性能和资源使用
-            NODE_BUILD_ARGS = "-u root:root -v \$HOME/.cache/yarn:\${env.YARN_CACHE_FOLDER} -v \$HOME/.cache/npm:\${env.NPM_CONFIG_CACHE} --cpus=4 --memory=6g --shm-size=2g"
+            NODE_BUILD_ARGS = "-u root:root -v \$HOME/.cache/yarn:/root/.cache/yarn -v \$HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
