@@ -27,8 +27,11 @@ def call(Map<String, Object> config) {
             buildDiscarder(logRotator(numToKeepStr: '5'))
         }
         environment {
+            YARN_CACHE_FOLDER = "/root/.cache/yarn"
+            NPM_CONFIG_CACHE = "/root/.npm"
+
             // Node.js 构建配置 - 优化性能和资源使用
-            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:/root/.cache/yarn -v $HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
+            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:${env.YARN_CACHE_FOLDER} -v $HOME/.cache/npm:${env.NPM_CONFIG_CACHE} --cpus=4 --memory=6g --shm-size=2g"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
@@ -40,8 +43,7 @@ def call(Map<String, Object> config) {
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
             // Node.js 性能优化环境变量
             NODE_OPTIONS = "--max-old-space-size=4096 --max-semi-space-size=128"
-            NPM_CONFIG_CACHE = "/root/.npm"
-            YARN_CACHE_FOLDER = "/root/.cache/yarn"
+
             // 修复 Rollup 架构兼容性
             ROLLUP_PLATFORM = "linux"
             ROLLUP_ARCH = "x64"
@@ -85,8 +87,8 @@ def call(Map<String, Object> config) {
                     export YARN_NETWORK_TIMEOUT=300000
                     export YARN_NETWORK_CONCURRENCY=16
                     export YARN_PREFER_OFFLINE=true
-                    export YARN_CACHE_FOLDER=/root/.cache/yarn
-                    export NPM_CONFIG_CACHE=/root/.npm
+                    export YARN_CACHE_FOLDER=${env.YARN_CACHE_FOLDER}
+                    export NPM_CONFIG_CACHE=${env.NPM_CONFIG_CACHE}
                     export NPM_CONFIG_PREFER_OFFLINE=true
                     export NPM_CONFIG_AUDIT=false
                     export NPM_CONFIG_FUND=false
@@ -96,7 +98,7 @@ def call(Map<String, Object> config) {
                     yarn config set registry https://registry.npmmirror.com
                     yarn config set network-concurrency 16
                     yarn config set prefer-offline true
-                    yarn config set cache-folder /root/.cache/yarn
+                    yarn config set cache-folder ${env.YARN_CACHE_FOLDER}
                     yarn config set network-timeout 300000
                     yarn config set child-concurrency 8
                     yarn config set enable-progress-bars false
@@ -107,7 +109,7 @@ def call(Map<String, Object> config) {
                     npm config set prefer-offline true
                     npm config set audit false
                     npm config set fund false
-                    npm config set cache /root/.npm
+                    npm config set cache ${env.NPM_CONFIG_CACHE}
                     
                     # 清理可能的缓存问题
                     echo "=== 清理缓存和依赖 ==="
@@ -167,10 +169,10 @@ def call(Map<String, Object> config) {
                         echo "备份并替换 Rollup native.js 文件"
                         cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
                         cat > node_modules/vite/node_modules/rollup/dist/native.js << 'EOF'
-// 禁用原生模块，强制使用 JavaScript 实现
-module.exports = function() {
-    throw new Error('Native module disabled - using JavaScript implementation');
-};
+                        // 禁用原生模块，强制使用 JavaScript 实现
+                        module.exports = function() {
+                            throw new Error('Native module disabled - using JavaScript implementation');
+                        };
 EOF
                     fi
                     
