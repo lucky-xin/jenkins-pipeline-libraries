@@ -1,6 +1,21 @@
 import xyz.dev.ops.notify.DingTalk
 
+/**
+ * Maven 库项目发布流水线（vars）
+ *
+ * 功能：读取 POM 信息，执行 Maven 构建与部署（deploy），并推送变更通知。
+ * 先决条件：
+ *  - Config File Provider: Maven settings.xml（fileId: 42697037-54bd-44a1-80c2-7a97d30f2266）
+ */
+
 def call(Map<String, Object> config) {
+    /**
+     * 入参（config）：
+     *  robotId        钉钉机器人ID（可选）
+     *  baseImg        基础镜像（可选）
+     *  builderImage   构建镜像（默认 maven:3.9.11-amazoncorretto-17）
+     *  sqDashboardUrl SonarQube 外网地址（可选，仅用于通知展示）
+     */
     // 设置默认值
     def params = [
             robotId       : config.robotId ?: '',

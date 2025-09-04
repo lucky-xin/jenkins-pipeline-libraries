@@ -1,7 +1,35 @@
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
 
+/**
+ * Vue3 微服务前端通用流水线（vars）
+ *
+ * 功能：
+ *  - Node 构建（Yarn）
+ *  - SonarQube 代码扫描
+ *  - Docker 多架构镜像构建与推送
+ *  - Kubernetes 发布（模板渲染）
+ *
+ * 先决条件：
+ *  - 凭据：docker-registry-secret、sonarqube-token-secret
+ *  - Config File Provider：部署模板（fileId: deployment-micro-svc-template）
+ */
+
 def call(Map<String, Object> config) {
+    /**
+     * 入参（config）：
+     *  robotId                 钉钉机器人ID
+     *  baseImage               Nginx 基础镜像（可选）
+     *  buildImage              Node 构建镜像（默认 node:24.6.0-alpine）
+     *  svcName                 服务名（必填）
+     *  version                 大版本（最终包含 commit）
+     *  dockerRepository        镜像仓库
+     *  sqServerUrl             SonarQube 内网地址
+     *  sqDashboardUrl          SonarQube 外网地址
+     *  k8sServerUrl            k8s API 地址
+     *  k8sDeployImage          kubectl 镜像
+     *  k8sDeployContainerArgs  kubectl 容器参数
+     */
     // 设置默认值
     def params = [robotId               : config.robotId ?: '',
                   baseImage             : config.baseImage ?: "nginx:1.27-alpine",
@@ -31,7 +59,7 @@ def call(Map<String, Object> config) {
             NPM_CONFIG_CACHE = "/root/.npm"
 
             // Node.js 构建配置 - 优化性能和资源使用
-            NODE_BUILD_ARGS = "-u root:root -v \$HOME/.cache/yarn:/root/.cache/yarn -v \$HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
+            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:/root/.cache/yarn -v $HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"

@@ -2,7 +2,32 @@ import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.maven.MavenUtils
 import xyz.dev.ops.notify.DingTalk
 
+/**
+ * Maven 微服务通用流水线（vars）
+ *
+ * 功能：
+ *  - Maven 构建与 Sonar 扫描
+ *  - Docker 多架构镜像构建与推送
+ *  - Kubernetes 发布（模板渲染）
+ *
+ * 先决条件：
+ *  - 凭据：docker-registry-secret
+ *  - Config File Provider：部署模板（fileId: deployment-micro-svc-template）
+ *  - Jenkins 节点具备 docker 权限
+ */
+
 def call(Map<String, Object> config) {
+    /**
+     * 入参（config）：
+     *  robotId                 钉钉机器人ID
+     *  baseImage               镜像基础镜像（可选）
+     *  buildImage              构建镜像（默认 maven:3.9.11-amazoncorretto-17）
+     *  svcName                 服务名（为空则取 pom.artifactId）
+     *  dockerRepository        镜像仓库地址
+     *  k8sServerUrl            k8s API 地址
+     *  k8sDeployImage          kubectl 镜像
+     *  k8sDeployContainerArgs  kubectl 容器参数
+     */
     // 设置默认值
     def params = [robotId               : config.robotId ?: '',
                   baseImage             : config.baseImage ?: "openjdk:17.0-slim",

@@ -1,7 +1,36 @@
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
 
+/**
+ * Golang 微服务通用流水线（vars）
+ *
+ * 功能：
+ *  - SonarQube 代码扫描
+ *  - Go 交叉编译（linux/arm64，禁用 CGO）
+ *  - Docker 多架构镜像构建与推送（buildx 或传统构建）
+ *  - Kubernetes 发布（使用 Config File Provider 模板渲染）
+ *
+ * 先决条件：
+ *  - 凭据：gitlab-secret、docker-registry-secret、sonarqube-token-secret
+ *  - Config File Provider：部署模板（fileId: deployment-micro-svc-template）
+ *  - Jenkins 节点具备 docker 权限
+ */
+
 def call(Map<String, Object> config) {
+    /**
+     * 入参（config）：
+     *  robotId                 钉钉机器人ID（可选，用于通知）
+     *  baseImage               基础镜像（可选，默认 alpine:latest）
+     *  buildImage              构建镜像（可选，默认 golang:1.25）
+     *  svcName                 服务名（必填，作为镜像与部署名）
+     *  version                 大版本号（可选，默认 1.0.0；最终版本包含 git commit）
+     *  sqServerUrl             SonarQube 内网地址（可选）
+     *  sqDashboardUrl          SonarQube 外网地址（可选）
+     *  dockerRepository        镜像仓库地址（可选）
+     *  k8sServerUrl            k8s API 地址（可选）
+     *  k8sDeployImage          kubectl 镜像（可选）
+     *  k8sDeployContainerArgs  kubectl 容器启动参数（可选）
+     */
     // 设置默认值
     def params = [robotId               : config.robotId ?: '',
                   baseImage             : config.baseImage ?: "alpine:latest",

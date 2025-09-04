@@ -1,5 +1,12 @@
 package xyz.dev.ops.notify
 
+/**
+ * 钉钉通知工具（Jenkins Shared Library）
+ *
+ * 提供两种能力：
+ * - 根据当前构建的变更集生成简要变更说明
+ * - 发送 Markdown 格式的钉钉通知
+ */
 
 def CreateMsg() {
     def MAX_MSG_LEN = 100
@@ -21,6 +28,17 @@ def CreateMsg() {
     }
     return changeString
 }
+
+/**
+ * 发送钉钉通知
+ *
+ * @param config 参数表：
+ *  robotId     必填，钉钉机器人ID
+ *  jobName     必填，任务名称（展示标题/报告链接）
+ *  reason      可选，失败原因
+ *  title       可选，自定义标题（默认使用 jobName）
+ *  sqServerUrl 可选，SonarQube 服务地址（用于拼接质量报告链接）
+ */
 
 def post(Map<String, Object> config) {
     // 设置默认值
