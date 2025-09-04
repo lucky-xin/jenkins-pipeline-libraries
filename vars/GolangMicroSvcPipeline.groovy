@@ -76,9 +76,10 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post([robotId: "${params.robotId}",
-                                           jobName: "${env.SERVICE_NAME}",
-                                           reason : "【代码审核】失败！"])
+                            dingTalk.post([
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【代码审核】失败！"])
                         }
                     }
                 }
@@ -93,14 +94,10 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-secret',
+                    withCredentials([usernamePassword(
+                            credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
                             passwordVariable: 'GIT_PASSWORD')]) {
-                        script {
-                            if ("${env.BRANCH_NAME}" == "pre") {
-                                env.VERSION = "v${env.VERSION}"
-                            }
-                        }
                         sh label: "Go build in container", script: """
                         set -eux
                         go version
@@ -147,6 +144,9 @@ def call(Map<String, Object> config) {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
 
+                        if ("${env.BRANCH_NAME}" == "pre") {
+                            env.VERSION = "v${env.VERSION}"
+                        }
                         withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'REGISTRY_USERNAME',
                                 passwordVariable: 'REGISTRY_PASSWORD')]) {

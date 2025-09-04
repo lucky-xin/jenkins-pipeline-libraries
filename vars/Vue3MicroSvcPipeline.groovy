@@ -7,6 +7,7 @@ def call(Map<String, Object> config) {
                   baseImage             : config.baseImage ?: "nginx:1.27-alpine",
                   buildImage            : config.buildImage ?: "node:24.6.0-alpine3.22",
                   svcName               : config.svcName ?: "",
+                  version: config.version ?: "1.0.0",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   sqServerUrl           : config.sqServerUrl ?: "http://172.29.35.103:9000",
                   sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
@@ -179,6 +180,13 @@ def call(Map<String, Object> config) {
                             usernameVariable: 'REGISTRY_USERNAME',
                             passwordVariable: 'REGISTRY_PASSWORD'
                     )]) {
+                        script {
+                            // 设置版本标签
+                            env.VERSION = "${params.version}-${env.COMMIT_ID}"
+                            if ("${env.BRANCH_NAME}" == "pre") {
+                                env.VERSION = "v${env.VERSION}"
+                            }
+                        }
                         sh label: "Docker buildx build and push", script: """
                             set -eux
                             # 启用 BuildKit
@@ -186,10 +194,7 @@ def call(Map<String, Object> config) {
 
                             # 登录镜像仓库
                             echo "$REGISTRY_PASSWORD" | docker login "$DOCKER_REPOSITORY" -u "$REGISTRY_USERNAME" --password-stdin
-
-                            # 设置版本标签
-                            VERSION="${env.COMMIT_ID}"
-                            
+                          
                             docker buildx build \
                               -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
                               --platform linux/amd64,linux/arm64/v8 \
