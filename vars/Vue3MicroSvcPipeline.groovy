@@ -38,7 +38,8 @@ def call(Map<String, Object> config) {
             NAMESPACE = 'micro-svc-dev'
             IMAGE_NAME = "micro-svc/${params.svcName}"
             SERVICE_NAME = "${params.svcName}"
-            COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
+            // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
+            VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT.substring(0, 8)}"
             // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
             // Node.js 性能优化环境变量
@@ -143,13 +144,6 @@ def call(Map<String, Object> config) {
                             usernameVariable: 'REGISTRY_USERNAME',
                             passwordVariable: 'REGISTRY_PASSWORD'
                     )]) {
-                        script {
-                            // 设置版本标签
-                            env.VERSION = "${params.version}-${env.COMMIT_ID}"
-                            if ("${env.BRANCH_NAME}" == "pre") {
-                                env.VERSION = "v${env.VERSION}"
-                            }
-                        }
                         sh label: "Docker buildx build and push", script: """
                             set -eux
                             # 启用 BuildKit

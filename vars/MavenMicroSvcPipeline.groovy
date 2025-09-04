@@ -67,7 +67,7 @@ def call(Map<String, Object> config) {
                             }
                             env.PROJECT_VERSION = mvnUtils.readVersion()
                             // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
-                            env.VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + env.PROJECT_VERSION : env.PROJECT_VERSION + '-' + env.GIT_COMMITGIT_COMMIT.substring(0, 8)}"
+                            env.VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + env.PROJECT_VERSION : env.PROJECT_VERSION + '-' + env.GIT_COMMIT.substring(0, 8)}"
                             
                             env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
                             env.JAR_FILE = "${env.ARTIFACT_ID}-${env.PROJECT_VERSION}.jar"
