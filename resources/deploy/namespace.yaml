@@ -1,9 +1,0 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: templet
-  labels:
-    kubernetes.io/metadata.name: templet
-spec:
-  finalizers:
-    - kubernetes
