@@ -96,7 +96,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【Vue3构建】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -131,7 +131,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【代码审核】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -166,7 +166,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【封装Docker镜像】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -210,7 +210,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【k8s发布】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }

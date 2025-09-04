@@ -78,7 +78,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason: "【代码审核】失败！"
+                                    reason: "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -131,7 +131,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【Golang构建 & 代码审核】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -178,7 +178,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【封装Docker】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
@@ -210,7 +210,6 @@ def call(Map<String, Object> config) {
                 post {
                     success {
                         script {
-                            echo "当前阶段是：${env.STAGE_NAME}"
                             dingTalk.post([
                                     robotId    : "${params.robotId}",
                                     jobName    : "${env.SERVICE_NAME}",
@@ -223,7 +222,7 @@ def call(Map<String, Object> config) {
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【k8s发布】失败！"
+                                    reason : "【${env.STAGE_NAME}】失败！"
                             ])
                         }
                     }
