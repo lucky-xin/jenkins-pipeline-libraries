@@ -151,6 +151,10 @@ def call(Map<String, Object> config) {
                     npm install @rollup/rollup-linux-x64-musl --no-save --force --omit=optional || echo "x64 musl 模块安装失败"
                     npm install @rollup/rollup-linux-x64-gnu --no-save --force --omit=optional || echo "x64 gnu 模块安装失败"
                     
+                    # 方法1.5: 强制安装 ARM64 模块（如果存在）
+                    npm install @rollup/rollup-linux-arm64-musl --no-save --force --omit=optional || echo "ARM64 musl 模块安装失败"
+                    npm install @rollup/rollup-linux-arm64-gnu --no-save --force --omit=optional || echo "ARM64 gnu 模块安装失败"
+                    
                     # 方法2: 创建符号链接，让 ARM64 模块指向 x64 模块
                     if [ -d "node_modules/@rollup/rollup-linux-x64-musl" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-musl" ]; then
                         echo "创建 ARM64 musl 到 x64 musl 的符号链接"
@@ -164,17 +168,44 @@ def call(Map<String, Object> config) {
                         ln -sf rollup-linux-x64-gnu node_modules/@rollup/rollup-linux-arm64-gnu
                     fi
                     
-                    # 方法3: 直接删除 Rollup 的原生模块文件，强制使用 JavaScript 实现
-                    if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
-                        echo "备份并替换 Rollup native.js 文件"
-                        cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
-                        cat > node_modules/vite/node_modules/rollup/dist/native.js << 'EOF'
-                        // 禁用原生模块，强制使用 JavaScript 实现
-                        module.exports = function() {
-                            throw new Error('Native module disabled - using JavaScript implementation');
-                        };
+                    # 方法3: 直接替换所有 Rollup 的原生模块文件，强制使用 JavaScript 实现
+                    echo "查找并替换所有 Rollup native.js 文件"
+                    
+                    # 处理顶级 Rollup 依赖
+                    if [ -f "node_modules/rollup/dist/native.js" ]; then
+                        echo "备份并替换顶级 Rollup native.js 文件"
+                        cp node_modules/rollup/dist/native.js node_modules/rollup/dist/native.js.backup
+                        cat > node_modules/rollup/dist/native.js << 'EOF'
+// 禁用原生模块，强制使用 JavaScript 实现
+module.exports = function() {
+    throw new Error('Native module disabled - using JavaScript implementation');
+};
 EOF
                     fi
+                    
+                    # 处理 Vite 子依赖中的 Rollup
+                    if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
+                        echo "备份并替换 Vite 子依赖中的 Rollup native.js 文件"
+                        cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
+                        cat > node_modules/vite/node_modules/rollup/dist/native.js << 'EOF'
+// 禁用原生模块，强制使用 JavaScript 实现
+module.exports = function() {
+    throw new Error('Native module disabled - using JavaScript implementation');
+};
+EOF
+                    fi
+                    
+                    # 查找并处理所有可能的 Rollup 实例
+                    find node_modules -name "native.js" -path "*/rollup/dist/*" -exec sh -c '
+                        echo "处理 Rollup native.js 文件: $1"
+                        cp "$1" "$1.backup"
+                        cat > "$1" << "EOF"
+// 禁用原生模块，强制使用 JavaScript 实现
+module.exports = function() {
+    throw new Error("Native module disabled - using JavaScript implementation");
+};
+EOF
+                    ' _ {} \;
                     
                     # 优化的构建过程
                     echo "=== 开始构建 ==="
@@ -184,6 +215,9 @@ EOF
                     export ROLLUP_ARCH="x64"
                     export ROLLUP_DISABLE_NATIVE="true"
                     export ROLLUP_NATIVE_DISABLE="1"
+                    # 强制 Rollup 使用 JavaScript 实现
+                    export ROLLUP_FORCE_JS="true"
+                    export ROLLUP_USE_JS="1"
                     
                     # 使用并行构建和优化选项
                     time yarn build --mode production
