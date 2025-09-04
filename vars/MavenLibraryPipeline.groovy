@@ -47,9 +47,7 @@ def call(Map<String, Object> config) {
                         env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
                         env.VERSION = pom.getVersion()  //版本
                         env.PACKAGING = pom.getPackaging() //文件后缀
-                        env.DOCKER_TAG = "${env.VERSION}-${env.COMMIT_ID}" //docker镜像 tag 为区分环境,pre 前缀有v
-                        env.JAR_FILE = "${env.SERVICE_NAME}-${env.VERSION}.jar"
-
+                        
                         echo "服务名称: ${env.SERVICE_NAME}"
                         echo "版本: ${env.VERSION}"
                         echo "JAR文件: ${env.JAR_FILE}"
