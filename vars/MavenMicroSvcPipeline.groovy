@@ -32,8 +32,6 @@ def call(Map<String, Object> config) {
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
             NAMESPACE = 'micro-svc-dev'
-
-            COMMIT_ID = "${GIT_COMMIT}".substring(0, 8)
             // k8s发布文件模板id
             K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
         }
@@ -68,13 +66,9 @@ def call(Map<String, Object> config) {
                                 env.SERVICE_NAME = "${env.ARTIFACT_ID}"
                             }
                             env.PROJECT_VERSION = mvnUtils.readVersion()
-                            env.VERSION = "${env.PROJECT_VERSION}-${env.COMMIT_ID}"
-
-                            if ("${env.BRANCH_NAME}" == "pre") {
-                                //docker镜像 tag 为区分环境,pre 前缀有v
-                                env.VERSION = "v${env.VERSION}"
-                            }
-
+                            // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
+                            env.VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + env.PROJECT_VERSION : env.PROJECT_VERSION + '-' + env.GIT_COMMITGIT_COMMIT.substring(0, 8)}"
+                            
                             env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
                             env.JAR_FILE = "${env.ARTIFACT_ID}-${env.PROJECT_VERSION}.jar"
 

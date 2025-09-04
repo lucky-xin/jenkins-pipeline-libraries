@@ -31,7 +31,7 @@ def call(Map<String, Object> config) {
             BUILD_ARGS = "-u root:root -v $HOME/.cache/go-build/:/tmp/.cache/go-build/"  //本地仓库挂载
             SERVICE_NAME = "${params.svcName}"  //服务名称
             // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
-            VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT}"
+            VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT.substring(0, 8)}"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             // 镜像名称
             IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
