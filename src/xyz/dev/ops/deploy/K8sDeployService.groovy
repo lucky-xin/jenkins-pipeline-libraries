@@ -25,33 +25,32 @@ class K8sDeployService implements Serializable {
                 k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\"",
                 k8sDeploymentFileId   : config.k8sDeploymentFileId ?: 'deployment-micro-svc-template'
         ]
+        // 使用k8s密钥文件连接k8s集群
+        script.withKubeConfig([credentialsId: "k8s-config",
+                               serverUrl    : params.k8sServerUrl
+        ]) {
+            // 使用 configFile 插件，获取配置文件模板，创建 Kubernetes 部署文件 deployment.yaml
+            script.configFileProvider([script.configFile(
+                    fileId: params.k8sDeploymentFileId,
+                    targetLocation: "deployment.tpl"
+            )]) {
+                script.script {
+                    script.sh "cat deployment.tpl"
+                    def deployTemplate = script.readFile(encoding: "UTF-8", file: "deployment.tpl")
+                    def deployment = deployTemplate
+                            .replaceAll("\$\\{APP_NAME\\}", params.serviceName)
+                            .replaceAll("\$\\{NAMESPACE\\}", params.namespace)
+                            .replaceAll("\$\\{DOCKER_REPOSITORY\\}", params.dockerRepository)
+                            .replaceAll("\$\\{IMAGE_NAME\\}", params.imageName)
+                            .replaceAll("\$\\{VERSION\\}", params.version)
+                    script.writeFile(encoding: 'UTF-8', file: './deploy.yaml', text: deployment)
+                }
 
-        // 直接执行部署逻辑，不包装在 stage 中
-        // 因为调用方已经在 stage 中调用了这个方法
-//        script.withKubeConfig([credentialsId: "k8s-config",
-//                               serverUrl    : params.k8sServerUrl]) {
-//            // 使用 configFile 插件，创建 Kubernetes 部署文件 deployment.yaml
-//            script.configFileProvider([script.configFile(
-//                    fileId: params.k8sDeploymentFileId,
-//                    targetLocation: "deployment.tpl")
-//            ]) {
-//                script.script {
-//                    script.sh "cat deployment.tpl"
-//                    def deployTemplate = script.readFile(encoding: "UTF-8", file: "deployment.tpl")
-//                    def deployment = deployTemplate
-//                            .replaceAll("\\{APP_NAME\\}", params.serviceName)
-//                            .replaceAll("\\{NAMESPACE\\}", params.namespace)
-//                            .replaceAll("\\{DOCKER_REPOSITORY\\}", params.dockerRepository)
-//                            .replaceAll("\\{IMAGE_NAME\\}", params.imageName)
-//                            .replaceAll("\\{VERSION\\}", params.version)
-//                    script.writeFile(encoding: 'UTF-8', file: './deploy.yaml', text: deployment)
-//                }
-//
-//                // 输出新创建的部署 yaml 文件内容
-//                script.sh "cat deploy.yaml"
-//                // 执行 Kuberctl 命令进行部署操作
+                // 输出新创建的部署 yaml 文件内容
+                script.sh "cat deploy.yaml"
+                // 执行 Kuberctl 命令进行部署操作
 //                script.sh "kubectl apply -n ${params.namespace} -f deploy.yaml"
-//            }
-//        }
+            }
+        }
     }
 }

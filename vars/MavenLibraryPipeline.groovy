@@ -3,9 +3,10 @@ import xyz.dev.ops.notify.DingTalk
 def call(Map<String, Object> config) {
     // 设置默认值
     def params = [
-            robotId     : config.robotId ?: '',
-            baseImg     : config.baseImg ?: "openjdk:17.0-slim",
-            builderImage: config.builderImage ?: "maven:3.9.11-amazoncorretto-17"
+            robotId       : config.robotId ?: '',
+            baseImg       : config.baseImg ?: "openjdk:17.0-slim",
+            builderImage  : config.builderImage ?: "maven:3.9.11-amazoncorretto-17",
+            sqDashboardUrl: config.sqDashboardUrl ?: "http://8.145.35.103:9000",
     ]
 
     def dingTalk = new DingTalk()
@@ -66,14 +67,23 @@ def call(Map<String, Object> config) {
                     }
                 }
                 post {
-                    failure { 
-                        script { 
+                    success {
+                        script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【Maven构建 & 代码审核】失败！"
+                                    robotId    : "${params.robotId}",
+                                    jobName    : "${env.SERVICE_NAME}",
+                                    sqServerUrl: "${params.sqDashboardUrl}"
                             ])
-                        } 
+                        }
+                    }
+                    failure {
+                        script {
+                            dingTalk.post([
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【Maven构建 & 代码审核】失败！"
+                            ])
+                        }
                     }
                 }
             }
