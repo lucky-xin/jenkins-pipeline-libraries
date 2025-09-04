@@ -75,10 +75,12 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
+                            echo "当前阶段是：${env.STAGE_NAME}"
                             dingTalk.post([
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
-                                    reason : "【代码审核】失败！"])
+                                    reason: "【代码审核】失败！"
+                            ])
                         }
                     }
                 }
