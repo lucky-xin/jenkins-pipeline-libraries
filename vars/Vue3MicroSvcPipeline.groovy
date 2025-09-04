@@ -45,6 +45,8 @@ def call(Map<String, Object> config) {
             // 修复 Rollup 架构兼容性
             ROLLUP_PLATFORM = "linux"
             ROLLUP_ARCH = "x64"
+            // 强制 Rollup 使用 JavaScript 实现
+            ROLLUP_DISABLE_NATIVE = "true"
         }
 
         stages {
@@ -118,12 +120,39 @@ def call(Map<String, Object> config) {
                     echo "=== 依赖安装完成 ==="
                     echo "node_modules 大小: \$(du -sh node_modules 2>/dev/null || echo 'N/A')"
 
+                    # 修复 Rollup 架构问题
+                    echo "=== 修复 Rollup 架构问题 ==="
+                    
+                    # 方法1: 强制安装正确的 Rollup 原生模块
+                    npm install @rollup/rollup-linux-x64-musl --no-save --force || echo "x64 musl 模块安装失败"
+                    npm install @rollup/rollup-linux-x64-gnu --no-save --force || echo "x64 gnu 模块安装失败"
+                    
+                    # 方法2: 创建符号链接，让 ARM64 模块指向 x64 模块
+                    if [ -d "node_modules/@rollup/rollup-linux-x64-musl" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-musl" ]; then
+                        echo "创建 ARM64 musl 到 x64 musl 的符号链接"
+                        mkdir -p node_modules/@rollup
+                        ln -sf rollup-linux-x64-musl node_modules/@rollup/rollup-linux-arm64-musl
+                    fi
+                    
+                    if [ -d "node_modules/@rollup/rollup-linux-x64-gnu" ] && [ ! -d "node_modules/@rollup/rollup-linux-arm64-gnu" ]; then
+                        echo "创建 ARM64 gnu 到 x64 gnu 的符号链接"
+                        mkdir -p node_modules/@rollup
+                        ln -sf rollup-linux-x64-gnu node_modules/@rollup/rollup-linux-arm64-gnu
+                    fi
+                    
+                    # 方法3: 修改 Rollup 的 native.js 文件，强制使用 JavaScript 实现
+                    if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
+                        echo "修改 Rollup native.js 文件，禁用原生模块"
+                        sed -i 's/requireWithFriendlyError/function requireWithFriendlyError() { throw new Error("Native module disabled"); } requireWithFriendlyError/g' node_modules/vite/node_modules/rollup/dist/native.js || echo "修改 native.js 失败"
+                    fi
+                    
                     # 优化的构建过程
                     echo "=== 开始构建 ==="
                     export NODE_OPTIONS="--max-old-space-size=4096 --max-semi-space-size=128"
                     export NODE_ENV=production
                     export ROLLUP_PLATFORM="linux"
                     export ROLLUP_ARCH="x64"
+                    export ROLLUP_DISABLE_NATIVE="true"
                     
                     # 使用并行构建和优化选项
                     time yarn build --mode production
