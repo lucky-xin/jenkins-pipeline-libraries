@@ -62,7 +62,7 @@ def call(Map<String, Object> config) {
                     )]) {
                         sh '''
                         # 打包项目（使用Jenkins管理的settings.xml和.m2缓存）
-                        mvn -s "$MAVEN_SETTINGS" -B -U -DskipTests clean package deploy
+                        mvn -s "$MAVEN_SETTINGS" -B clean package deploy
                         '''
                     }
                 }
