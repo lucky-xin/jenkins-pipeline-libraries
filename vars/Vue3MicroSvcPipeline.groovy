@@ -127,7 +127,7 @@ def call(Map<String, Object> config) {
                         --force
                     
                     # 如果 npm 安装失败，回退到 yarn
-                    if [ $? -ne 0 ]; then
+                    if [ \$? -ne 0 ]; then
                         echo "npm 安装失败，回退到 yarn..."
                         time yarn install \
                             --network-timeout 300000 \
