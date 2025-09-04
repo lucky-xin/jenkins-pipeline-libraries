@@ -31,7 +31,7 @@ def call(Map<String, Object> config) {
             NPM_CONFIG_CACHE = "/root/.npm"
 
             // Node.js 构建配置 - 优化性能和资源使用
-            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:${env.YARN_CACHE_FOLDER} -v $HOME/.cache/npm:${env.NPM_CONFIG_CACHE} --cpus=4 --memory=6g --shm-size=2g"
+            NODE_BUILD_ARGS = "-u root:root -v \$HOME/.cache/yarn:\${env.YARN_CACHE_FOLDER} -v \$HOME/.cache/npm:\${env.NPM_CONFIG_CACHE} --cpus=4 --memory=6g --shm-size=2g"
             K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
@@ -175,20 +175,20 @@ def call(Map<String, Object> config) {
                     if [ -f "node_modules/rollup/dist/native.js" ]; then
                         echo "备份并替换顶级 Rollup native.js 文件"
                         cp node_modules/rollup/dist/native.js node_modules/rollup/dist/native.js.backup
-                        echo '// 禁用原生模块，强制使用 JavaScript 实现
-module.exports = function() {
-    throw new Error("Native module disabled - using JavaScript implementation");
-};' > node_modules/rollup/dist/native.js
+                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/rollup/dist/native.js
+                        echo "module.exports = function() {" >> node_modules/rollup/dist/native.js
+                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> node_modules/rollup/dist/native.js
+                        echo "};" >> node_modules/rollup/dist/native.js
                     fi
                     
                     # 处理 Vite 子依赖中的 Rollup
                     if [ -f "node_modules/vite/node_modules/rollup/dist/native.js" ]; then
                         echo "备份并替换 Vite 子依赖中的 Rollup native.js 文件"
                         cp node_modules/vite/node_modules/rollup/dist/native.js node_modules/vite/node_modules/rollup/dist/native.js.backup
-                        echo '// 禁用原生模块，强制使用 JavaScript 实现
-module.exports = function() {
-    throw new Error("Native module disabled - using JavaScript implementation");
-};' > node_modules/vite/node_modules/rollup/dist/native.js
+                        echo "// 禁用原生模块，强制使用 JavaScript 实现" > node_modules/vite/node_modules/rollup/dist/native.js
+                        echo "module.exports = function() {" >> node_modules/vite/node_modules/rollup/dist/native.js
+                        echo "    throw new Error(\"Native module disabled - using JavaScript implementation\");" >> node_modules/vite/node_modules/rollup/dist/native.js
+                        echo "};" >> node_modules/vite/node_modules/rollup/dist/native.js
                     fi
                     
                     # 查找并处理所有可能的 Rollup 实例

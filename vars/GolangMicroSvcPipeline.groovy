@@ -147,7 +147,8 @@ def call(Map<String, Object> config) {
                         if ("${env.BRANCH_NAME}" == "pre") {
                             env.VERSION = "v${env.VERSION}"
                         }
-                        withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
+                        withCredentials([usernamePassword(
+                                credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'REGISTRY_USERNAME',
                                 passwordVariable: 'REGISTRY_PASSWORD')]) {
                             sh label: "Docker build with GitLab credentials", script: """
