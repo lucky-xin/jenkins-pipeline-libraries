@@ -205,7 +205,7 @@ module.exports = function() {
     throw new Error("Native module disabled - using JavaScript implementation");
 };
 EOF
-                    ' _ {} \;
+                     _ {} \\;
                     
                     # 优化的构建过程
                     echo "=== 开始构建 ==="
