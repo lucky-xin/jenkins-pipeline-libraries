@@ -117,16 +117,7 @@ def call(Map<String, Object> config) {
                     
                     echo "=== 依赖安装完成 ==="
                     echo "node_modules 大小: \$(du -sh node_modules 2>/dev/null || echo 'N/A')"
-                    
-                    # 修复 Rollup 架构兼容性问题
-                    echo "=== 修复 Rollup 架构兼容性 ==="
-                    if [ -d "node_modules/vite/node_modules/rollup" ]; then
-                        echo "检测到 Rollup 依赖，尝试修复架构兼容性..."
-                        cd node_modules/vite/node_modules/rollup
-                        npm rebuild || echo "Rollup rebuild 失败，继续构建..."
-                        cd ../../../..
-                    fi
-                    
+
                     # 优化的构建过程
                     echo "=== 开始构建 ==="
                     export NODE_OPTIONS="--max-old-space-size=4096 --max-semi-space-size=128"
