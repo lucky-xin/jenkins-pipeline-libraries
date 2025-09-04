@@ -8,7 +8,8 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "golang:1.25",
                   svcName               : config.svcName ?: "",
                   version               : config.version ?: "1.0.0",
-                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "http://172.29.35.103:9000",
+                  sqServerUrl           : config.sqServerUrl ?: "http://172.29.35.103:9000",
+                  sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
@@ -41,6 +42,47 @@ def call(Map<String, Object> config) {
             SONAR_TOKEN = credentials('sonarqube-token-secret')
         }
         stages {
+            stage("代码审核") {
+                steps {
+                    checkout scm
+                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
+                        script {
+                            echo 'ls -la'
+
+                            // 使用 sh 命令直接运行 Docker 容器
+                            sh """
+                                echo '开始执行 SonarQube 代码扫描...'
+                                ls -la
+                                docker run --rm -u root:root \
+                                    -v ./:/usr/src \
+                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
+                                    -e SONAR_HOST_URL=${params.sqServerUrl} \
+                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
+                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
+                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
+                                    -e SONAR_SOURCES=/usr/src \
+                                    -e SONAR_TESTS=/usr/src \
+                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
+                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \
+                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \
+                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \
+                                    xin8/sonar-scanner-cli:latest
+                                echo 'SonarQube 代码扫描完成'
+                            """
+                        }
+                    }
+                }
+                post {
+                    failure {
+                        script {
+                            dingTalk.post([robotId: "${params.robotId}",
+                                           jobName: "${env.SERVICE_NAME}",
+                                           reason : "【代码审核】失败！"])
+                        }
+                    }
+                }
+            }
             stage("Golang构建") {
                 agent {
                     docker {
@@ -51,9 +93,7 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
-                    checkout scm
-                    withCredentials([usernamePassword(
-                            credentialsId: 'gitlab-secret',
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
                             passwordVariable: 'GIT_PASSWORD')]) {
                         script {
@@ -61,7 +101,7 @@ def call(Map<String, Object> config) {
                                 env.VERSION = "v${env.VERSION}"
                             }
                         }
-                        sh label: 'Go build in container', script: '''
+                        sh label: "Go build in container", script: """
                         set -eux
                         go version
                         
@@ -87,7 +127,7 @@ def call(Map<String, Object> config) {
 
                         # 清理 git 临时凭据映射（避免后续泄露）
                         git config --global --unset-all url."https://$GIT_USERNAME:$GIT_PASSWORD@${GITLAB_HOST}/".insteadOf || true
-                    '''
+                    """
                     }
                 }
                 post {
@@ -102,58 +142,14 @@ def call(Map<String, Object> config) {
                     }
                 }
             }
-            stage("代码审核") {
-                steps {
-                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            echo 'ls -la'
-
-                            // 使用 sh 命令直接运行 Docker 容器
-                            sh """
-                                echo '开始执行 SonarQube 代码扫描...'
-                                ls -la
-                                docker run --rm -u root:root \
-                                    -v ./:/usr/src \
-                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
-                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \
-                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
-                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
-                                    -e SONAR_SOURCES=/usr/src \
-                                    -e SONAR_TESTS=/usr/src \
-                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
-                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \
-                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \
-                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \
-                                    xin8/sonar-scanner-cli:latest
-                                echo 'SonarQube 代码扫描完成'
-                            """
-                        }
-                    }
-                }
-                post {
-                    failure {
-                        script {
-                            dingTalk.post([
-                                    robotId: "${params.robotId}",
-                                    jobName: "${env.SERVICE_NAME}",
-                                    reason : "【代码审核】失败！"
-                            ])
-                        }
-                    }
-                }
-            }
             stage("封装Docker镜像") {
                 steps {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
 
-                        withCredentials([usernamePassword(
-                                credentialsId: 'docker-registry-secret',
+                        withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'REGISTRY_USERNAME',
-                                passwordVariable: 'REGISTRY_PASSWORD'
-                        )]) {
+                                passwordVariable: 'REGISTRY_PASSWORD')]) {
                             sh label: "Docker build with GitLab credentials", script: """
                                 set -eux
                                 # 启用 BuildKit
@@ -220,9 +216,9 @@ def call(Map<String, Object> config) {
                     success {
                         script {
                             dingTalk.post([
-                                    robotId           : "${params.robotId}",
-                                    jobName           : "${env.SERVICE_NAME}",
-                                    sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
+                                    robotId    : "${params.robotId}",
+                                    jobName    : "${env.SERVICE_NAME}",
+                                    sqServerUrl: "${params.sqDashboardUrl}"
                             ])
                         }
                     }

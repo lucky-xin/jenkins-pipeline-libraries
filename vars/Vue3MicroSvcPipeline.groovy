@@ -8,7 +8,8 @@ def call(Map<String, Object> config) {
                   buildImage            : config.buildImage ?: "node:24.6.0-alpine3.22",
                   svcName               : config.svcName ?: "",
                   dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
-                  sonarqubeServerUrl    : config.sonarqubeServerUrl ?: "http://172.29.35.103:9000",
+                  sqServerUrl           : config.sqServerUrl ?: "http://172.29.35.103:9000",
+                  sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
                   k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
                   k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""]
@@ -99,13 +100,13 @@ def call(Map<String, Object> config) {
                     
                     # 优化的依赖安装
                     echo "=== 开始安装依赖 ==="
-                    time yarn install \\
-                        --frozen-lockfile \\
-                        --network-timeout 300000 \\
-                        --prefer-offline \\
-                        --silent \\
-                        --ignore-engines \\
-                        --ignore-optional \\
+                    time yarn install \
+                        --frozen-lockfile \
+                        --network-timeout 300000 \
+                        --prefer-offline \
+                        --silent \
+                        --ignore-engines \
+                        --ignore-optional \
                         --non-interactive
                     
                     echo "=== 依赖安装完成 ==="
@@ -145,7 +146,7 @@ def call(Map<String, Object> config) {
                                 docker run --rm -u root:root \
                                     -v ./:/usr/src \
                                     -e SONAR_TOKEN=${SONAR_TOKEN} \
-                                    -e SONAR_HOST_URL=${params.sonarqubeServerUrl} \
+                                    -e SONAR_HOST_URL=${params.sqServerUrl} \
                                     -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
                                     -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
                                     -e SONAR_PROJECT_VERSION=${env.VERSION} \
@@ -163,9 +164,9 @@ def call(Map<String, Object> config) {
                     failure {
                         script {
                             dingTalk.post([
-                                robotId: "${params.robotId}",
-                                jobName: "${env.SERVICE_NAME}",
-                                reason: "【代码审核】失败！"
+                                    robotId: "${params.robotId}",
+                                    jobName: "${env.SERVICE_NAME}",
+                                    reason : "【代码审核】失败！"
                             ])
                         }
                     }
@@ -236,9 +237,9 @@ def call(Map<String, Object> config) {
                     success {
                         script {
                             dingTalk.post([
-                                    robotId           : "${params.robotId}",
-                                    jobName           : "${env.SERVICE_NAME}",
-                                    sonarqubeServerUrl: "${params.sonarqubeServerUrl}"
+                                    robotId    : "${params.robotId}",
+                                    jobName    : "${env.SERVICE_NAME}",
+                                    sqServerUrl: "${params.sqDashboardUrl}"
                             ])
                         }
                     }
