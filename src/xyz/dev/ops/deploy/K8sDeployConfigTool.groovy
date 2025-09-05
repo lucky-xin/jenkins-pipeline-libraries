@@ -45,7 +45,7 @@ class K8sDeployConfigTool implements Serializable {
 
         // 替换模板中的占位符
         String modifiedContent = params.templateContent
-                .replace('${APP_NAME}', params.appName)
+                .replace('${APP_NAME}', params.serviceName)
                 .replace('${NAMESPACE}', params.namespace)
                 .replace('${VERSION}', params.version)
                 .replace('${DOCKER_REPOSITORY}', params.dockerRepository)
