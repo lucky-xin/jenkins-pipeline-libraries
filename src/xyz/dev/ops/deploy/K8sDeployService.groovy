@@ -30,25 +30,21 @@ class K8sDeployService implements Serializable {
      *  imageName              必填，镜像名（${IMAGE_NAME}）
      *  version                必填，镜像版本（${VERSION}）
      *  k8sServerUrl           可选，k8s API 地址，默认集群内地址
-     *  k8sDeployImage         可选，kubectl 镜像，默认 bitnami/kubectl:latest
-     *  k8sDeployContainerArgs 可选，kubectl 容器参数
-     *  k8sDeploymentFileId    必填，Config File Provider 中的模板文件ID
+     *  k8sDeployFileId    必填，Config File Provider 中的模板文件ID
      */
     def deploy(Map<String, Object> config) {
         // 设置默认值（允许调用方仅提供差异项）
         def params = [
-                robotId               : config.robotId ?: '',
-                serviceName           : config.serviceName ?: '',
-                namespace             : config.namespace ?: '',
-                dockerRepository      : config.dockerRepository ?: '',
-                imageName             : config.imageName ?: '',
-                version               : config.version ?: '',
-                frontend       : config.frontend ?: false,
-                backendServices: config.backendServices ?: Collections.emptyList(),
-                k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
-                k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
-                k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\"",
-                k8sDeploymentFileId   : config.k8sDeploymentFileId ?: 'deployment-micro-svc-template'
+                robotId         : config.robotId ?: '',
+                serviceName     : config.serviceName ?: '',
+                namespace       : config.namespace ?: '',
+                imageName       : config.imageName ?: '',
+                version         : config.version ?: '',
+                frontend        : config.frontend ?: false,
+                backendServices : config.backendServices ?: Collections.emptyList(),
+                dockerRepository: config.dockerRepository ?: '',
+                k8sServerUrl    : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
+                k8sDeployFileId : config.k8sDeployFileId ?: 'deployment-micro-svc-template'
         ]
         // 关键参数校验，提前失败以便快速定位问题
         assert params.serviceName: 'serviceName 不能为空'
@@ -56,7 +52,7 @@ class K8sDeployService implements Serializable {
         assert params.dockerRepository: 'dockerRepository 不能为空'
         assert params.imageName: 'imageName 不能为空'
         assert params.version: 'version 不能为空'
-        assert params.k8sDeploymentFileId: 'k8sDeploymentFileId 不能为空'
+        assert params.k8sDeployFileId: 'k8sDeployFileId 不能为空'
 
         // 使用k8s密钥文件连接k8s集群
         script.withKubeConfig([credentialsId: "k8s-config",
@@ -64,7 +60,7 @@ class K8sDeployService implements Serializable {
         ]) {
             // 使用 configFile 插件，获取配置文件模板，创建 Kubernetes 部署文件 deployment.yaml
             script.configFileProvider([script.configFile(
-                    fileId: params.k8sDeploymentFileId,
+                    fileId: params.k8sDeployFileId,
                     targetLocation: "deployment.tpl"
             )]) {
                 script.script {

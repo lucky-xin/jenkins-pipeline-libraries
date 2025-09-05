@@ -71,8 +71,8 @@ pipeline {
             version               : '1.0.0-abcdef12',
             k8sServerUrl          : 'https://kubernetes.default.svc.cluster.local',
             k8sDeployImage        : 'bitnami/kubectl:latest',
-            k8sDeployContainerArgs: '-u root:root --entrypoint ""',
-            k8sDeploymentFileId   : 'deployment-micro-svc-template'
+            k8sDeployArgs: '-u root:root --entrypoint ""',
+            k8sDeployFileId   : 'deployment-micro-svc-template'
           ])
         }
       }

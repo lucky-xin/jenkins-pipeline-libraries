@@ -26,18 +26,18 @@ def call(Map<String, Object> config) {
      *  dockerRepository        镜像仓库地址
      *  k8sServerUrl            k8s API 地址
      *  k8sDeployImage          kubectl 镜像
-     *  k8sDeployContainerArgs  kubectl 容器参数
+     *  k8sDeployArgs  kubectl 容器参数
      */
     // 设置默认值
-    def params = [robotId               : config.robotId ?: '',
-                  baseImage             : config.baseImage ?: "openjdk:17.0-slim",
-                  buildImage            : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
-                  svcName               : config.svcName ?: "",
-                  sqDashboardUrl        : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
-                  dockerRepository      : config.dockerRepository ?: "47.120.49.65:5001",
-                  k8sServerUrl          : config.k8sServerUrl ?: "https://47.107.91.186:6443",
-                  k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
-                  k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\""]
+    def params = [robotId         : config.robotId ?: '',
+                  baseImage       : config.baseImage ?: "openjdk:17.0-slim",
+                  buildImage      : config.buildImage ?: "maven:3.9.11-amazoncorretto-17",
+                  svcName         : config.svcName ?: "",
+                  sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
+                  dockerRepository: config.dockerRepository ?: "47.120.49.65:5001",
+                  k8sServerUrl    : config.k8sServerUrl ?: "https://47.107.91.186:6443",
+                  k8sDeployImage  : config.k8sDeployImage ?: "bitnami/kubectl:latest",
+                  k8sDeployArgs   : config.k8sDeployArgs ?: "-u root:root --entrypoint \"\""]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -53,12 +53,12 @@ def call(Map<String, Object> config) {
         environment {
             // Maven配置
             MAVEN_BUILD_ARGS = "-u root:root -v $HOME/.m2:/root/.m2"
-            K8S_DEPLOY_CONTAINER_ARGS = "${params.k8sDeployContainerArgs}"
+            K8S_DEPLOY_ARGS = "${params.k8sDeployArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
             NAMESPACE = 'micro-svc-dev'
             // k8s发布文件模板id
-            K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
+            K8S_DEPLOY_FILE_ID = 'deployment-micro-svc-template'
         }
 
         stages {
@@ -93,7 +93,7 @@ def call(Map<String, Object> config) {
                             env.PROJECT_VERSION = mvnUtils.readVersion()
                             // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
                             env.VERSION = "${env.BRANCH_NAME == 'pre' ? 'v' + env.PROJECT_VERSION : env.PROJECT_VERSION + '-' + env.GIT_COMMIT.substring(0, 8)}"
-                            
+
                             env.IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
                             env.JAR_FILE = "${env.ARTIFACT_ID}-${env.PROJECT_VERSION}.jar"
 
@@ -169,22 +169,22 @@ def call(Map<String, Object> config) {
                 agent {
                     docker {
                         image "${params.k8sDeployImage}"
-                        args "${params.k8sDeployContainerArgs}"
+                        args "${params.k8sDeployArgs}"
                     }
                 }
                 steps {
                     script {
                         k8sDeployService.deploy([
-                                robotId               : params.robotId,
-                                serviceName           : env.SERVICE_NAME,
-                                namespace             : env.NAMESPACE,
-                                dockerRepository      : env.DOCKER_REPOSITORY,
-                                imageName             : env.IMAGE_NAME,
-                                version               : env.VERSION,
-                                k8sServerUrl          : params.k8sServerUrl,
-                                k8sDeployImage        : params.k8sDeployImage,
-                                k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
-                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
+                                robotId         : params.robotId,
+                                serviceName     : env.SERVICE_NAME,
+                                namespace       : env.NAMESPACE,
+                                dockerRepository: env.DOCKER_REPOSITORY,
+                                imageName       : env.IMAGE_NAME,
+                                version         : env.VERSION,
+                                k8sServerUrl    : params.k8sServerUrl,
+                                k8sDeployImage  : params.k8sDeployImage,
+                                k8sDeployArgs   : env.K8S_DEPLOY_ARGS,
+                                k8sDeployFileId : env.K8S_DEPLOY_FILE_ID
                         ])
                     }
                 }

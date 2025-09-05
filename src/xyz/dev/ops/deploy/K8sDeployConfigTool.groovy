@@ -28,9 +28,9 @@ class K8sDeployConfigTool implements Serializable {
     static def create(Map<String, Object> config) {
         def params = [
                 templateContent : config.templateContent ?: '',
+                dockerRepository: config.dockerRepository ?: '',
                 serviceName     : config.serviceName ?: '',
                 namespace       : config.namespace ?: '',
-                dockerRepository: config.dockerRepository ?: '',
                 imageName       : config.imageName ?: '',
                 version         : config.version ?: '',
                 frontend        : config.frontend ?: false,
