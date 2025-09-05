@@ -55,11 +55,10 @@ def call(Map<String, Object> config) {
             buildDiscarder(logRotator(numToKeepStr: '5'))
         }
         environment {
-            YARN_CACHE_FOLDER = "/root/.cache/yarn"
             NPM_CONFIG_CACHE = "/root/.npm"
 
             // Node.js 构建配置 - 优化性能和资源使用
-            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/yarn:/root/.cache/yarn -v $HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
+            NODE_BUILD_ARGS = "-u root:root -v $HOME/.cache/npm:/root/.npm --cpus=4 --memory=6g --shm-size=2g"
             K8S_DEPLOY_ARGS = "${params.k8sDeployArgs}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
@@ -101,19 +100,14 @@ def call(Map<String, Object> config) {
                         export NODE_OPTIONS="--max-old-space-size=4096"
                             
                         node -v
-                        corepack enable
-                        corepack prepare yarn@1.22.22 --activate
+                        npm -v
     
-                        export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-                        export YARN_TIMEOUT=600000
+                        npm config set registry https://registry.npmmirror.com
+                        npm config set cache /root/.npm
+                        npm config set prefer-offline true
     
-                        yarn config set registry https://registry.npmmirror.com
-                        yarn config set network-concurrency 8
-                        yarn config set prefer-offline true
-                        yarn config set cache-folder /root/.cache/yarn
-    
-                        yarn install --frozen-lockfile --network-timeout 600000 --prefer-offline
-                        yarn build
+                        npm ci --prefer-offline
+                        npm run build
     
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                     """
