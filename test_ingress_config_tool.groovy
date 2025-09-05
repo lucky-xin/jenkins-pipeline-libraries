@@ -123,12 +123,13 @@ try {
 
     def params = [
             templateContent : templateContent,
-            serviceName     : config.serviceName ?: '',
-            namespace       : config.namespace ?: '',
-            dockerRepository: config.dockerRepository ?: '',
-            imageName       : config.imageName ?: '',
-            version         : config.version ?: '',
-            backendServices : config.backendServices ?: Collections.emptyList(),
+            serviceName     : appName,
+            namespace       : namespace,
+            dockerRepository: dockerRepository,
+            imageName       : imageName,
+            version         : version,
+            backendServices : backendServices,
+            frontend        : true
     ]
     def modifiedContent = K8sDeployConfigTool.create(params)
 

@@ -50,14 +50,16 @@ class K8sDeployConfigTool implements Serializable {
                 .replace('${VERSION}', params.version)
                 .replace('${DOCKER_REPOSITORY}', params.dockerRepository)
                 .replace('${IMAGE_NAME}', params.imageName)
+
         if (params.frontend) {
             def backendServices = params.backendServices as List<Map<String, String>>
             // 修改 nginx configuration-snippet
-            modifiedContent = modifyNginxConfigSnippet(modifiedContent, backendServices)
+            def tmp = modifyNginxConfigSnippet(modifiedContent, backendServices)
 
             // 修改 Ingress paths
-            modifiedContent = modifyIngressPaths(modifiedContent, backendServices)
+            return modifyIngressPaths(tmp, backendServices)
         }
+
         return modifiedContent
     }
 
