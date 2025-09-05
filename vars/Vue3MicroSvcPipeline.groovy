@@ -99,7 +99,7 @@ def call(Map<String, Object> config) {
                         # 设置 Node.js 内存限制，避免堆内存溢出
                         export NODE_OPTIONS="--max-old-space-size=4096"
                             
-                        node -v:wq
+                        node -v
                         npm -v
     
                         npm config set registry https://registry.npmmirror.com
@@ -108,7 +108,7 @@ def call(Map<String, Object> config) {
     
                         npm --prefer-offline
                         npm install
-                        
+
                         npm run build
     
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
