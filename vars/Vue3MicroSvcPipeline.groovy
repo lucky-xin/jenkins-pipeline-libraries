@@ -99,7 +99,7 @@ def call(Map<String, Object> config) {
                         # 设置 Node.js 内存限制，避免堆内存溢出
                         export NODE_OPTIONS="--max-old-space-size=4096"
                             
-                        node -v
+                        node -v:wq
                         npm -v
     
                         npm config set registry https://registry.npmmirror.com
