@@ -106,7 +106,9 @@ def call(Map<String, Object> config) {
                         npm config set cache /root/.npm
                         npm config set prefer-offline true
     
-                        npm ci --prefer-offline
+                        npm --prefer-offline
+                        npm install
+                        
                         npm run build
     
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
