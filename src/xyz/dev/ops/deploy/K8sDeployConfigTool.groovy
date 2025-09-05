@@ -8,9 +8,9 @@ import java.util.regex.Matcher
  * 用途：读取和修改 Kubernetes Ingress 配置，特别是 nginx 相关的配置
  * 支持动态添加后端服务路由配置
  */
-class IngressConfigTool implements Serializable {
+class K8sDeployConfigTool implements Serializable {
 
-    IngressConfigTool() {
+    K8sDeployConfigTool() {
     }
 
     /**
@@ -25,7 +25,7 @@ class IngressConfigTool implements Serializable {
      * @param version 必填，镜像版本（${VERSION}）
      * @return 修改后的 YAML 内容
      */
-    static def modifyIngressConfig(Map<String, Object> config) {
+    static def create(Map<String, Object> config) {
         def params = [
                 templateContent : config.templateContent ?: '',
                 serviceName     : config.serviceName ?: '',
@@ -33,6 +33,7 @@ class IngressConfigTool implements Serializable {
                 dockerRepository: config.dockerRepository ?: '',
                 imageName       : config.imageName ?: '',
                 version         : config.version ?: '',
+                frontend        : config.frontend ?: false,
                 backendServices : config.backendServices ?: Collections.emptyList(),
         ]
         // 关键参数校验，提前失败以便快速定位问题
@@ -49,13 +50,14 @@ class IngressConfigTool implements Serializable {
                 .replace('${VERSION}', params.version)
                 .replace('${DOCKER_REPOSITORY}', params.dockerRepository)
                 .replace('${IMAGE_NAME}', params.imageName)
+        if (params.frontend) {
+            def backendServices = params.backendServices as List<Map<String, String>>
+            // 修改 nginx configuration-snippet
+            modifiedContent = modifyNginxConfigSnippet(modifiedContent, backendServices)
 
-        // 修改 nginx configuration-snippet
-        modifiedContent = modifyNginxConfigSnippet(modifiedContent, params.backendServices as List<Map<String, String>>)
-
-        // 修改 Ingress paths
-        modifiedContent = modifyIngressPaths(modifiedContent, params.backendServices as List<Map<String, String>>)
-
+            // 修改 Ingress paths
+            modifiedContent = modifyIngressPaths(modifiedContent, backendServices)
+        }
         return modifiedContent
     }
 
@@ -67,7 +69,8 @@ class IngressConfigTool implements Serializable {
 
         // 查找并替换 nginx.ingress.kubernetes.io/configuration-snippet
         def configSnippetPattern = /(?s)nginx\.ingress\.kubernetes\.io\/configuration-snippet: \|(.*?)nginx\.ingress\.kubernetes\.io\/server-snippet/
-        def configSnippetReplacement = Matcher.quoteReplacement("""nginx.ingress.kubernetes.io/configuration-snippet: |
+        def configSnippetReplacement = Matcher.quoteReplacement(
+                """nginx.ingress.kubernetes.io/configuration-snippet: |
 ${nginxConfigSnippet}    nginx.ingress.kubernetes.io/server-snippet""")
 
         return content.replaceAll(configSnippetPattern, configSnippetReplacement)
@@ -146,50 +149,5 @@ ${ingressPaths}""")
         }
 
         return sb.toString()
-    }
-
-    /**
-     * 从模板文件路径读取并修改配置
-     *
-     * @param templateFileId Config File Provider 中的文件ID
-     * @param backendServices 后端服务配置
-     * @param namespace k8s命名空间（用于替换 ${NAMESPACE}）
-     * @param appName 前端服务名称（用于替换 ${APP_NAME}）
-     * @param version 版本号（用于替换 ${VERSION}）
-     * @param dockerRepository 镜像仓库（用于替换 ${DOCKER_REPOSITORY}）
-     * @param imageName 镜像名称（用于替换 ${IMAGE_NAME}）
-     * @return 修改后的 YAML 内容
-     */
-    def modifyIngressFromTemplate(String templateFileId,
-                                  List<Map<String, String>> backendServices,
-                                  String namespace,
-                                  String appName,
-                                  String version,
-                                  String dockerRepository,
-                                  String imageName) {
-        def templateContent = ""
-
-        // 使用 configFile 插件读取模板
-        script.configFileProvider([script.configFile(
-                fileId: templateFileId,
-                targetLocation: "ingress-template.tpl"
-        )]) {
-            templateContent = script.readFile(encoding: "UTF-8", file: "ingress-template.tpl")
-        }
-
-        // 替换模板中的占位符
-        def modifiedContent = templateContent
-                .replace('${APP_NAME}', appName)
-                .replace('${NAMESPACE}', namespace)
-                .replace('${VERSION}', version)
-                .replace('${DOCKER_REPOSITORY}', dockerRepository)
-                .replace('${IMAGE_NAME}', imageName)
-        // 修改 nginx configuration-snippet
-        modifiedContent = modifyNginxConfigSnippet(modifiedContent, backendServices)
-
-        // 修改 Ingress paths
-        modifiedContent = modifyIngressPaths(modifiedContent, backendServices)
-
-        return modifiedContent
     }
 }

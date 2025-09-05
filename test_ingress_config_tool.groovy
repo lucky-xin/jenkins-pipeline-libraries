@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+import xyz.dev.ops.deploy.K8sDeployConfigTool
 
 /**
  * IngressConfigTool 独立测试脚本
@@ -60,16 +61,10 @@ class MockJenkinsScript {
     }
 }
 
-// 导入工具类（直接使用本地类路径）
-import xyz.dev.ops.deploy.IngressConfigTool
-
 println "🚀 开始测试 IngressConfigTool 工具类"
 
 // 创建模拟的 Jenkins script 对象
 def mockScript = new MockJenkinsScript()
-
-// 创建工具实例
-def ingressTool = new IngressConfigTool(mockScript)
 
 // 测试配置数据
 def backendServices = [
@@ -88,7 +83,7 @@ println "后端服务名称: ${backendSvcName}"
 
 // 测试 1: 生成 nginx configuration-snippet
 println "\n🔧 测试 1: 生成 nginx configuration-snippet"
-def nginxConfig = ingressTool.generateNginxConfigSnippet(backendServices)
+def nginxConfig = K8sDeployConfigTool.generateNginxConfigSnippet(backendServices)
 println "生成的 nginx 配置："
 println nginxConfig
 
@@ -102,7 +97,7 @@ println "✅ nginx configuration-snippet 生成测试通过"
 
 // 测试 2: 生成 Ingress paths
 println "\n🔧 测试 2: 生成 Ingress paths"
-def ingressPaths = ingressTool.generateIngressPaths(backendServices)
+def ingressPaths = K8sDeployConfigTool.generateIngressPaths(backendServices)
 println "生成的 Ingress paths："
 println ingressPaths
 
@@ -124,15 +119,18 @@ try {
     version = "1.0.0"
     dockerRepository = "127.0.0.1:5000"
     imageName = "micro-svc/test-front-end"
-    def modifiedContent = ingressTool.modifyIngressConfig(
-            'resources/template/deployment-front-end-template.yaml',
-            backendServices,
-            namespace,
-            appName,
-            version,
-            dockerRepository,
-            imageName
-    )
+    def templateContent = mockScript.readFile(encoding: "UTF-8", file: 'resources/template/deployment-front-end-template.yaml')
+
+    def params = [
+            templateContent : templateContent,
+            serviceName     : config.serviceName ?: '',
+            namespace       : config.namespace ?: '',
+            dockerRepository: config.dockerRepository ?: '',
+            imageName       : config.imageName ?: '',
+            version         : config.version ?: '',
+            backendServices : config.backendServices ?: Collections.emptyList(),
+    ]
+    def modifiedContent = K8sDeployConfigTool.create(params)
 
     println "修改后的模板内容："
     println "=" * 80
@@ -156,50 +154,19 @@ try {
     e.printStackTrace()
 }
 
-// 测试 4: 使用 Config File Provider 方式
-println "\n🔧 测试 4: 使用 Config File Provider 方式"
-
-try {
-    def modifiedContent2 = ingressTool.modifyIngressFromTemplate(
-            'deployment-front-end-template',
-            backendServices,
-            namespace,
-            appName,
-            version,
-            dockerRepository,
-            imageName
-    )
-
-    println "通过 Config File Provider 修改后的内容："
-    println "=" * 80
-    println modifiedContent2
-    println "=" * 80
-
-    // 验证修改结果
-    assert modifiedContent2.contains("set \$service_name \"\";")
-    assert modifiedContent2.contains("if (\$request_uri ~* \"^/svc/tb-core/\")")
-    assert modifiedContent2.contains("path: /svc/tb-core/(/|\$)(.*)")
-
-    println "✅ Config File Provider 方式测试通过"
-
-} catch (Exception e) {
-    println "❌ Config File Provider 方式测试失败: ${e.message}"
-    e.printStackTrace()
-}
-
 // 测试 5: 边界情况测试
 println "\n🔧 测试 5: 边界情况测试"
 
 // 空后端服务列表
 def emptyServices = []
-def emptyNginxConfig = ingressTool.generateNginxConfigSnippet(emptyServices)
+def emptyNginxConfig = K8sDeployConfigTool.generateNginxConfigSnippet(emptyServices)
 assert emptyNginxConfig.contains("set \$service_name \"\";")
 assert !emptyNginxConfig.contains("if (\$request_uri")
 println "✅ 空服务列表测试通过"
 
 // 单个服务
 def singleService = [[svc_name: "single-svc", url: "/api/single"]]
-def singleNginxConfig = ingressTool.generateNginxConfigSnippet(singleService)
+def singleNginxConfig = K8sDeployConfigTool.generateNginxConfigSnippet(singleService)
 assert singleNginxConfig.contains("if (\$request_uri ~* \"^/api/single/\")")
 assert singleNginxConfig.contains("set \$service_name \"single-svc\";")
 println "✅ 单个服务测试通过"

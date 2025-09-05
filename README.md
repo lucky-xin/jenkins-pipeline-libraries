@@ -94,3 +94,77 @@ pipeline {
 - 统一使用 Map 作为方法入参，提供默认值并做关键字段断言
 - 共享逻辑沉淀在 `src/` 下类中，Jenkinsfile 通过导入类调用
 - 重要步骤失败时务必补充钉钉告警
+
+## FrontendDeploymentConfigurator 使用说明
+
+FrontendDeploymentConfigurator 是一个用于动态配置前端部署模板的工具类。它可以根据给定的配置修改 Kubernetes Ingress 资源中的 nginx 配置片段和路由规则。
+
+### 主要功能
+
+1. 动态生成 nginx 配置片段 (`nginx.ingress.kubernetes.io/configuration-snippet`)
+2. 动态配置 Ingress 路径规则 (`rules.http.paths`)
+
+### 使用方法
+
+#### 1. 导入类
+
+```groovy
+
+```
+
+#### 2. 调用 configureDeploymentTemplate 方法
+```groovy
+String result = FrontendDeploymentConfigurator.configureDeploymentTemplate(templateContent, config)
+```
+
+参数说明:
+- `templateContent`: 原始的 YAML 模板内容
+- `config`: 配置映射，包含以下键值:
+  - `serviceMappings`: 服务映射配置 (Map<String, String>)
+  - `backendServiceName`: 后端服务名称 (String)
+
+### 使用样例
+
+```groovy
+
+// 读取模板文件
+def templateFile = new File('resources/template/deployment-front-end-template.yaml')
+def templateContent = templateFile.text
+
+// 定义配置
+def config = [
+        backendServiceName: 'my-backend-service',
+        serviceMappings   : [
+                'user-service'   : 'user-svc',
+                'order-service'  : 'order-svc',
+                'product-service': 'product-svc'
+        ]
+]
+
+// 配置模板
+String configuredYaml = FrontendDeploymentConfigurator.configureDeploymentTemplate(templateContent, config)
+
+// 保存配置后的文件
+def outputFile = new File('output/deployment-configured.yaml')
+outputFile.text = configuredYaml
+```
+
+### 配置说明
+
+#### serviceMappings
+`serviceMappings` 是一个 Map，定义了路径前缀到服务名称的映射关系:
+```groovy
+serviceMappings: [
+    'user-service': 'user-svc',     // /svc/user-service/* -> user-svc
+    'order-service': 'order-svc',   // /svc/order-service/* -> order-svc
+]
+```
+
+这将生成:
+1. nginx 配置片段中的路径识别和重写规则
+2. Ingress 规则中的相应路径配置
+
+### 注意事项
+1. 模板文件必须包含 Ingress 资源定义
+2. 确保模板中包含必要的占位符变量如 `${APP_NAME}`、`${NAMESPACE}` 等
+3. 生成的配置会替换模板中原有的 Ingress 配置部分

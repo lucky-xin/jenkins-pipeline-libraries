@@ -43,6 +43,8 @@ class K8sDeployService implements Serializable {
                 dockerRepository      : config.dockerRepository ?: '',
                 imageName             : config.imageName ?: '',
                 version               : config.version ?: '',
+                frontend       : config.frontend ?: false,
+                backendServices: config.backendServices ?: Collections.emptyList(),
                 k8sServerUrl          : config.k8sServerUrl ?: "https://kubernetes.default.svc.cluster.local",
                 k8sDeployImage        : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                 k8sDeployContainerArgs: config.k8sDeployContainerArgs ?: "-u root:root --entrypoint \"\"",
@@ -68,12 +70,9 @@ class K8sDeployService implements Serializable {
                 script.script {
                     script.sh "cat deployment.tpl"
                     def deployTemplate = script.readFile(encoding: "UTF-8", file: "deployment.tpl")
-                    def deployment = deployTemplate
-                            .replace('${APP_NAME}', params.serviceName)
-                            .replace('${NAMESPACE}', params.namespace)
-                            .replace('${DOCKER_REPOSITORY}', params.dockerRepository)
-                            .replace('${IMAGE_NAME}', params.imageName)
-                            .replace('${VERSION}', params.version)
+
+                    params['templateContent'] = deployTemplate
+                    def deployment = K8sDeployConfigTool.create(params)
                     script.writeFile(encoding: 'UTF-8', file: './deploy.yaml', text: deployment)
                 }
 

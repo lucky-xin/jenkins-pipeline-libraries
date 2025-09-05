@@ -1,3 +1,4 @@
+import xyz.dev.ops.deploy.K8sDeployConfigTool
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
 
@@ -45,6 +46,7 @@ def call(Map<String, Object> config) {
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
+    def ingressTool = new K8sDeployConfigTool(this)
     pipeline {
         agent any
         options {
@@ -69,7 +71,7 @@ def call(Map<String, Object> config) {
             // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
             VERSION = "${BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT.substring(0, 8)}"
             // k8s发布文件模板id
-            K8S_DEPLOYMENT_FILE_ID = 'deployment-micro-svc-template'
+            K8S_DEPLOYMENT_FILE_ID = 'deployment-front-end-template'
             // Node.js 性能优化环境变量
             NODE_OPTIONS = "--max-old-space-size=4096 --max-semi-space-size=128"
 
@@ -219,7 +221,7 @@ def call(Map<String, Object> config) {
                                 k8sServerUrl          : params.k8sServerUrl,
                                 k8sDeployImage        : params.k8sDeployImage,
                                 k8sDeployContainerArgs: env.K8S_DEPLOY_CONTAINER_ARGS,
-                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID
+                                k8sDeploymentFileId   : env.K8S_DEPLOYMENT_FILE_ID,
                         ])
                     }
                 }
