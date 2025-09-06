@@ -210,7 +210,7 @@ def call(Map<String, Object> config) {
                                 namespace       : env.NAMESPACE,
                                 dockerRepository: env.DOCKER_REPOSITORY,
                                 imageName       : env.IMAGE_NAME,
-                                version         : env.COMMIT_ID,
+                                version         : env.VERSION,
                                 k8sServerUrl    : params.k8sServerUrl,
                                 k8sDeployImage  : params.k8sDeployImage,
                                 k8sDeployArgs   : env.K8S_DEPLOY_ARGS,
