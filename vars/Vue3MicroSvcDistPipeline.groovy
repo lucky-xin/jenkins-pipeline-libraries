@@ -96,20 +96,6 @@ def call(Map<String, Object> config) {
                     checkout scm
                     sh label: "Node build in container", script: """
                         set -eux
-                        # 设置 Node.js 内存限制，避免堆内存溢出
-                        export NODE_OPTIONS="--max-old-space-size=4096"
-                            
-                        node -v
-                        npm -v
-    
-                        npm config set registry https://registry.npmmirror.com
-                        npm config set cache /root/.npm
-                        npm config set prefer-offline true
-    
-                        npm install
-                        
-                        npm run build
-    
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                     """
                 }
