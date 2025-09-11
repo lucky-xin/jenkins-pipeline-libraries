@@ -1,0 +1,40 @@
+# 使用多架构支持的 JRE 作为基础镜像（arm64/amd64 均可）
+FROM eclipse-temurin:21-jre-jammy
+
+# 设置维护者信息
+LABEL maintainer="chaoxin.lu"
+LABEL description="Multi-arch SonarQube Scanner CLI with environment variable support"
+
+# 安装必要工具并下载 SonarScanner CLI（不自带JRE版本）
+ENV SONAR_SCANNER_VERSION=7.2.0.5079 \
+    SONAR_SCANNER_HOME=/opt/sonar-scanner
+
+RUN set -eux; \
+    sed -i 's|http://ports.ubuntu.com/ubuntu-ports|http://mirrors.aliyun.com/ubuntu-ports|g' /etc/apt/sources.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends curl unzip ca-certificates; \
+    rm -rf /var/lib/apt/lists/*; \
+    mkdir -p "$SONAR_SCANNER_HOME"; \
+    curl -fsSL "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux-aarch64.zip" -o /tmp/sonar-scanner.zip; \
+    unzip -q /tmp/sonar-scanner.zip -d /opt; \
+    SC_DIR=$(find /opt -maxdepth 1 -type d -name "sonar-scanner-*" | head -n1); \
+    mkdir -p "$SONAR_SCANNER_HOME"; \
+    mv "$SC_DIR"/* "$SONAR_SCANNER_HOME"/; \
+    rmdir "$SC_DIR"; \
+    chmod +x "$SONAR_SCANNER_HOME"/bin/* || true; \
+    rm -f /tmp/sonar-scanner.zip; \
+    ln -s "$SONAR_SCANNER_HOME/bin/sonar-scanner" /usr/local/bin/sonar-scanner; \
+    ln -s "$SONAR_SCANNER_HOME/bin/sonar-scanner-debug" /usr/local/bin/sonar-scanner-debug; \
+    apt-get purge -y --auto-remove curl unzip; \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/*
+
+ENV PATH="$SONAR_SCANNER_HOME/bin:${PATH}"
+
+# 复制自定义的 entrypoint 脚本并设置执行权限
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# 设置新的入口点
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# 默认命令
+CMD ["sonar-scanner"]

@@ -1,0 +1,72 @@
+# 镜像：xpanel browser 后端开发与构建环境
+# 镜像构建：
+# docker build -t [镜像名称]:[镜像版本] .
+# 运行镜像：
+# docker run -d --name [容器名称] -p 8110:8110 -p 30022:22 -v [宿主机目录]:/app -e GO111MODULE=on -e GOPROXY="https://goproxy.cn,direct" [镜像名称]:[镜像版本]
+# 端口说明：
+# 8110：xpanel browser 服务端口
+# 30022：SSH服务端口，也可以不映射，主要推荐用于vscode、goland等IDE的远程开发
+
+# ----------------------------------------------------------------------------------------------
+# 基础构建阶段：安装基础工具、SSH服务、zsh及配置
+FROM ubuntu:22.04 AS base_builder
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+WORKDIR /opt/sdks
+
+# 更新软件源并安装必需的软件包，同时替换为清华大学的镜像源
+RUN sed -i 's@archive.ubuntu.com@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list \
+    && sed -i 's@security.ubuntu.com@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list \
+    && apt update
+
+# 安装基础依赖包、常用工具、SSH服务器、tzdata
+RUN apt install -y --no-install-recommends \
+    lib32z1 lib32stdc++6 \
+    build-essential \
+    tar zip unzip bzip2 xz-utils \
+    wget curl \
+    sqlite3 libsqlite3-dev \
+    ca-certificates \
+    gcc g++ \
+    openssh-server \
+    tzdata \
+    vim \
+    git \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# ----------------------------------------------------------------------------------------------
+# SDK构建阶段：复制SDK并执行安装脚本
+FROM base_builder AS sdk_builder
+
+# 复制SDK文件
+COPY ./sdks .
+
+# 解压所有SDK文件
+RUN tar -Jxvf ./hi3531a/arm-hisiv200-linux.tar.xz -C /opt && \
+    tar -Jxvf ./hi3536/arm-hisiv400-linux.tar.xz -C /opt && \
+    tar -zxvf ./ss524v100/arm-mix410-linux.tgz -C /opt && \
+    tar -zxvf ./ss626v100/aarch64-mix410-linux.tgz -C /opt && \
+    tar -zxvf ./ss927v100ss528v100/aarch64-mix210-linux.tgz -C /opt && \
+    rm -rf ./sdks
+
+# 安装各个SDK
+WORKDIR /opt/arm-hisiv200-linux
+RUN ./cross.install
+
+WORKDIR /opt/arm-hisiv400-linux
+RUN ./cross.v400.install
+
+WORKDIR /opt/arm-mix410-linux
+RUN ./arm-mix410-linux.install
+
+WORKDIR /opt/aarch64-mix410-linux
+RUN ./aarch64-mix410-linux.install
+
+WORKDIR /opt/aarch64-mix210-linux
+RUN ./aarch64-mix210-linux.install

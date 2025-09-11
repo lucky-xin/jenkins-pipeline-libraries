@@ -1,0 +1,125 @@
+# 镜像：xpanel browser 后端开发与构建环境
+# 镜像构建：
+# docker build -t [镜像名称]:[镜像版本] .
+# 运行镜像：
+# docker run -d --name [容器名称] -p 8110:8110 -p 30022:22 -v [宿主机目录]:/app -e GO111MODULE=on -e GOPROXY="https://goproxy.cn,direct" [镜像名称]:[镜像版本]
+# 端口说明：
+# 8110：xpanel browser 服务端口
+# 30022：SSH服务端口，也可以不映射，主要推荐用于vscode、goland等IDE的远程开发
+
+# ----------------------------------------------------------------------------------------------
+# 基础构建阶段：安装基础工具、SSH服务、zsh及配置
+FROM ubuntu:22.04 AS base_builder
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+WORKDIR /opt/sdks
+
+# 更新软件源并安装必需的软件包，同时替换为清华大学的镜像源
+RUN sed -i 's@archive.ubuntu.com@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list \
+    && sed -i 's@security.ubuntu.com@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list \
+    && apt update
+
+# 安装基础依赖包、常用工具、SSH服务器、tzdata
+RUN apt install -y --no-install-recommends \
+    lib32z1 lib32stdc++6 \
+    build-essential \
+    tar zip unzip bzip2 xz-utils \
+    wget curl \
+    sqlite3 libsqlite3-dev \
+    ca-certificates \
+    gcc g++ \
+    openssh-server \
+    tzdata \
+    vim \
+    git \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# ----------------------------------------------------------------------------------------------
+# SDK构建阶段：复制SDK并执行安装脚本
+FROM base_builder AS sdk_builder
+
+# 复制SDK文件
+COPY ./sdks .
+
+# 解压所有SDK文件
+RUN tar -Jxvf ./hi3531a/arm-hisiv200-linux.tar.xz -C /opt && \
+    tar -Jxvf ./hi3536/arm-hisiv400-linux.tar.xz -C /opt && \
+    tar -zxvf ./ss524v100/arm-mix410-linux.tgz -C /opt && \
+    tar -zxvf ./ss626v100/aarch64-mix410-linux.tgz -C /opt && \
+    tar -zxvf ./ss927v100ss528v100/aarch64-mix210-linux.tgz -C /opt && \
+    rm -rf ./sdks
+
+# 安装各个SDK
+WORKDIR /opt/arm-hisiv200-linux
+RUN ./cross.install
+
+WORKDIR /opt/arm-hisiv400-linux
+RUN ./cross.v400.install
+
+WORKDIR /opt/arm-mix410-linux
+RUN ./arm-mix410-linux.install
+
+WORKDIR /opt/aarch64-mix410-linux
+RUN ./aarch64-mix410-linux.install
+
+WORKDIR /opt/aarch64-mix210-linux
+RUN ./aarch64-mix210-linux.install
+
+
+# ----------------------------------------------------------------------------------------------
+# 最终镜像阶段：集成SDK、Go环境、暴露SSH端口并使用入口点脚本
+FROM base_builder
+
+# 设置环境变量
+ENV GO_VERSION=1.23.10
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV CGO_ENABLED=1
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.google.cn
+
+# 复制交叉编译工具链
+COPY --from=sdk_builder /etc/profile /etc/profile
+COPY --from=sdk_builder /opt/hisi-linux /opt/hisi-linux
+COPY --from=sdk_builder /opt/linux /opt/linux
+
+# 安装Go语言环境
+RUN wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -P /tmp/ \
+    && tar -C /usr/local -xzf /tmp/go${GO_VERSION}.linux-amd64.tar.gz \
+    && rm /tmp/go${GO_VERSION}.linux-amd64.tar.gz \
+    && /usr/local/go/bin/go env -w CGO_ENABLED=1 \
+    && /usr/local/go/bin/go env -w GOPROXY=https://goproxy.cn,direct \
+    && /usr/local/go/bin/go env -w GOSUMDB=sum.golang.google.cn \
+    && echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
+
+# 配置SSH服务
+RUN mkdir /var/run/sshd \
+    && echo 'root:root' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
+    && echo "export PATH=\$PATH:/usr/local/go/bin" >> /root/.bashrc
+
+# 创建软链接解决libisl.so.19的问题
+RUN ln -sf /lib/x86_64-linux-gnu/libisl.so.23 /lib/x86_64-linux-gnu/libisl.so.19
+
+# 创建应用目录
+WORKDIR /app
+
+# 暴露端口
+EXPOSE 22 8110
+
+# 创建启动脚本
+RUN echo '#!/bin/bash' > /start.sh \
+    && echo 'service ssh start' >> /start.sh \
+    && echo 'exec "$@"' >> /start.sh \
+    && chmod +x /start.sh
+
+# 设置入口点
+ENTRYPOINT ["/start.sh"]
+CMD ["sleep", "infinity"]
