@@ -42,15 +42,26 @@ cd build-env/sonar-scanner-cli
 ```
 
 **构建选项：**
-- `./build.sh` - 构建并推送镜像到仓库（默认）
+- `./build.sh` - 构建并推送镜像到仓库（默认，使用 ARM64 Dockerfile）
 - `./build.sh -l` - 仅构建本地镜像（不推送）
 - `./build.sh -t v1.0.0` - 指定镜像标签
 - `./build.sh --platforms linux/amd64` - 指定平台
+- `./build.sh --arch arm64` - 使用 ARM64 Dockerfile 构建
+- `./build.sh --arch amd64` - 使用 AMD64 Dockerfile 构建
+- `./build.sh --arch amd64 -l` - 使用 AMD64 Dockerfile 构建本地镜像
+
+**架构选择说明：**
+- `--arch arm64`：使用 `Dockerfile_ARM64`，适用于 ARM64 架构的处理器（如 Apple Silicon、ARM 服务器）
+- `--arch amd64`：使用 `Dockerfile_AMD64`，适用于 x86_64 架构的处理器（如 Intel、AMD 处理器）
+- 默认使用 ARM64 架构，如需构建 AMD64 版本请显式指定 `--arch amd64`
 
 **镜像信息：**
 - 镜像名称：`xin8/sonar-scanner-cli:latest`
 - 支持平台：`linux/arm64,linux/amd64`
 - 用途：代码质量扫描
+- 支持的 Dockerfile：
+  - `Dockerfile_ARM64` - ARM64 架构专用（默认）
+  - `Dockerfile_AMD64` - AMD64 架构专用
 
 ### 第二步：构建 C++ 构建环境镜像
 
