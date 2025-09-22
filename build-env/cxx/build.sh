@@ -5,9 +5,47 @@
 
 set -e
 
-# 配置变量
-IMAGE_NAME="xin8/dev-env/cplus"
+# 显示使用说明
+show_usage() {
+    echo "用法: $0 [选项]"
+    echo "选项:"
+    echo "  -r, --registry REGISTRY    设置 Docker 仓库地址 (默认: xin8)"
+    echo "  -t, --tag TAG             设置镜像标签 (默认: latest)"
+    echo "  -h, --help                显示此帮助信息"
+    echo ""
+    echo "示例:"
+    echo "  $0 -r myregistry -t v1.0.0"
+    echo "  $0 --registry myregistry --tag v1.0.0"
+}
+
+# 默认配置变量
+DOCKER_REGISTRY="xin8" # Docker 仓库地址
 IMAGE_TAG="latest"
+
+# 解析命令行参数
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -r|--registry)
+            DOCKER_REGISTRY="$2"
+            shift 2
+            ;;
+        -t|--tag)
+            IMAGE_TAG="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            echo "错误: 未知参数 '$1'"
+            show_usage
+            exit 1
+            ;;
+    esac
+done
+
+IMAGE_NAME="$DOCKER_REGISTRY/devops/cxx"
 DOCKERFILE="Dockerfile"
 
 echo "=== 构建 protobuf-c Docker 镜像 ==="
@@ -37,7 +75,6 @@ if [ $? -eq 0 ]; then
         echo 'Docker 镜像测试:'
         autoconf --version | head -1
         automake --version | head -1
-        libtool --version | head -1
         protoc --version
         cmake --version | head -1
         echo '镜像测试完成'
@@ -47,6 +84,11 @@ if [ $? -eq 0 ]; then
     echo "使用方法:"
     echo "1. 在 Jenkinsfile 中使用: image '${IMAGE_NAME}:${IMAGE_TAG}'"
     echo "2. 本地测试: docker run -it ${IMAGE_NAME}:${IMAGE_TAG}"
+    echo ""
+    echo "脚本参数说明:"
+    echo "  -r, --registry REGISTRY    设置 Docker 仓库地址"
+    echo "  -t, --tag TAG             设置镜像标签"
+    echo "  -h, --help                显示帮助信息"
     
 else
     echo "错误: Docker 镜像构建失败"

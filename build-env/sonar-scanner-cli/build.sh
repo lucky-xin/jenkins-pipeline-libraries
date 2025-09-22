@@ -6,11 +6,12 @@
 set -euo pipefail
 
 # 配置变量
-IMAGE_NAME="xin8/sonar-scanner-cli"
+DOCKER_REGISTRY="xin8" # Docker 仓库地址
+
+IMAGE_NAME="$DOCKER_REGISTRY/devops/sonar-scanner-cli"
 IMAGE_TAG="latest"
 PLATFORMS="linux/arm64,linux/amd64"
 DOCKERFILE="Dockerfile_ARM64"
-ARCH_TYPE="arm64"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -51,7 +52,6 @@ check_files() {
     fi
     
     log_success "所有必要文件检查通过"
-    log_info "使用 Dockerfile: $DOCKERFILE (架构: $ARCH_TYPE)"
 }
 
 # 检查 Docker 和 buildx 是否可用
@@ -114,17 +114,16 @@ show_help() {
     echo "  -l, --local    仅构建本地镜像（不推送）"
     echo "  -p, --push     构建并推送镜像到仓库（默认）"
     echo "  -t, --tag TAG  指定镜像标签（默认: latest）"
+    echo "  -f, --file Dockerfile  指定Dockerfile（默认: Dockerfile_ARM64）"
+    echo "  -r, --registry 指定镜像仓库（默认: xin8）"
     echo "  --platforms    指定平台列表（默认: linux/arm64,linux/amd64）"
-    echo "  --arch ARCH    指定架构类型（arm64|amd64，默认: arm64）"
     echo ""
     echo "示例:"
-    echo "  $0                           # 构建并推送 latest 标签（ARM64）"
-    echo "  $0 -l                        # 仅构建本地镜像（ARM64）"
-    echo "  $0 -t v1.0.0                 # 构建并推送 v1.0.0 标签（ARM64）"
-    echo "  $0 --arch amd64              # 使用 AMD64 Dockerfile 构建"
-    echo "  $0 --arch arm64              # 使用 ARM64 Dockerfile 构建"
-    echo "  $0 --platforms linux/amd64   # 仅构建 amd64 平台"
-    echo "  $0 --arch amd64 -l           # 使用 AMD64 Dockerfile 构建本地镜像"
+    echo "  $0                    # 构建并推送 latest 标签"
+    echo "  $0 -l                 # 仅构建本地镜像"
+    echo "  $0 -t v1.0.0         # 构建并推送 v1.0.0 标签"
+    echo "  $0 --platforms linux/amd64  # 仅构建 amd64 平台"
+    echo "  $0 --registry xyz/library  # 镜像仓库地址【xyz/library】"
 }
 
 # 主函数
@@ -151,24 +150,16 @@ main() {
                 IMAGE_TAG="$2"
                 shift 2
                 ;;
-            --platforms)
-                platforms="$2"
+            -f|--file)
+                DOCKERFILE="$2"
                 shift 2
                 ;;
-            --arch)
-                ARCH_TYPE="$2"
-                case "$ARCH_TYPE" in
-                    arm64)
-                        DOCKERFILE="Dockerfile_ARM64"
-                        ;;
-                    amd64)
-                        DOCKERFILE="Dockerfile_AMD64"
-                        ;;
-                    *)
-                        log_error "不支持的架构类型: $ARCH_TYPE (支持: arm64, amd64)"
-                        exit 1
-                        ;;
-                esac
+            -r|--registry)
+                DOCKER_REGISTRY="$2"
+                shift 2
+                ;;
+            --platforms)
+                platforms="$2"
                 shift 2
                 ;;
             *)
@@ -181,13 +172,12 @@ main() {
     
     # 更新平台变量
     PLATFORMS="${platforms}"
-    
+    IMAGE_NAME="$DOCKER_REGISTRY/devops/sonar-scanner-cli"
+
     log_info "=== SonarQube 扫描器镜像构建脚本 ==="
     log_info "构建模式: ${build_mode}"
     log_info "镜像名称: ${IMAGE_NAME}:${IMAGE_TAG}"
     log_info "支持平台: ${PLATFORMS}"
-    log_info "使用架构: ${ARCH_TYPE}"
-    log_info "Dockerfile: ${DOCKERFILE}"
     echo ""
     
     # 执行构建流程

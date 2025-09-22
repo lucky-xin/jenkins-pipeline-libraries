@@ -1,4 +1,4 @@
-# protobuf-c 构建环境 Dockerfile
+# cxx 构建环境 Dockerfile
 FROM ubuntu:22.04
 
 # 设置环境变量
@@ -17,23 +17,36 @@ RUN apt-get update -q -y && \
         automake \
         libtool \
         pkg-config \
+        coreutils \
         # 网络工具
         wget \
         curl \
         git \
         ca-certificates \
+        # Google Test/Google Mock 相关
+        libgtest-dev \
+        libgmock-dev \
         # protobuf 相关
         libprotobuf-dev \
         libprotoc-dev \
         protobuf-compiler \
         # CMake 和文档工具
         cmake \
+        make \
         doxygen \
         graphviz \
+        # 代码覆盖率工具
+        lcov \
+        # 静态代码分析工具
+        cppcheck \
+        # 打包工具
+        tar \
+        gzip \
         # 其他有用工具
         vim \
         less \
         tree \
+        gcovr \
         && \
     # 清理缓存
     apt-get clean && \
@@ -53,10 +66,19 @@ WORKDIR /workspace
 RUN echo "=== 构建环境验证 ===" && \
     autoconf --version | head -1 && \
     automake --version | head -1 && \
-    libtool --version | head -1 && \
+    libtoolize --version | head -1 && \
     pkg-config --version && \
     protoc --version && \
     cmake --version | head -1 && \
+    lcov --version | head -1 && \
+    cppcheck --version && \
+    nproc && \
+    tar --version | head -1 && \
+    curl --version | head -1 && \
+    git --version && \
+    echo "=== Google Test/Google Mock 验证 ===" && \
+    pkg-config --cflags --libs gtest && \
+    pkg-config --cflags --libs gmock && \
     echo "=== 环境准备完成 ==="
 
 # 默认命令

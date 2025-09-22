@@ -1,3 +1,5 @@
+import xyz.dev.ops.adapter.GolangCoverageReportAdapter
+
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
 
@@ -13,8 +15,7 @@ import xyz.dev.ops.notify.DingTalk
  * 先决条件：
  *  - 凭据：gitlab-secret、docker-registry-secret、sonarqube-token-secret
  *  - Config File Provider：部署模板（fileId: deployment-micro-svc-template）
- *  - Jenkins 节点具备 docker 权限
- */
+ *  - Jenkins 节点具备 docker 权限*/
 
 def call(Map<String, Object> config) {
     /**
@@ -29,12 +30,15 @@ def call(Map<String, Object> config) {
      *  dockerRepository        镜像仓库地址（可选）
      *  k8sServerUrl            k8s API 地址（可选）
      *  k8sDeployImage          kubectl 镜像（可选）
-     *  k8sDeployArgs  kubectl 容器启动参数（可选）
-     */
+     *  k8sDeployArgs  kubectl 容器启动参数（可选）*/
     // 设置默认值
     def params = [robotId         : config.robotId ?: '',
                   baseImage       : config.baseImage ?: "alpine:latest",
                   buildImage      : config.buildImage ?: "golang:1.25",
+                  sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
+                  mainFilePath    : config.mainFilePath ?: "main.go",
+                  sourceDir       : config.sourceDir ?: 'src', // 源码目录
+                  testDir         : config.testDir ?: 'test', // 单元测试目录
                   svcName         : config.svcName ?: "",//微服务名称，规范【小写英文字母，数字，中划线'-'】
                   version         : config.version ?: "1.0.0",//大版本号，最终的版本号为：大版本号-【Git Commot id】
                   sqServerUrl     : config.sqServerUrl ?: "http://172.29.35.103:9000",//SonarQube内网地址
@@ -66,53 +70,16 @@ def call(Map<String, Object> config) {
             IMAGE_NAME = "micro-svc/${env.SERVICE_NAME}"
             //镜像仓库地址
             DOCKER_REPOSITORY = "${params.dockerRepository}"
-            GITLAB_HOST = 'lab.pistonint.com'
+            GITLAB_HOST = 'lab.xyz.com'
             // k8s命名空间
             NAMESPACE = 'micro-svc-dev'
             // k8s部署文件模板id
             K8S_DEPLOY_FILE_ID = 'deployment-micro-svc-template'
+            SOURCE_DIR = "${params.sourceDir}"
+            TEST_DIR = "${params.testDir}"
+            SQ_SERVER_URL = "${params.sqServerUrl}"
         }
         stages {
-            stage("代码审核") {
-                steps {
-                    checkout scm
-                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            // 使用 sh 命令直接运行 Docker 容器
-                            sh """
-                                echo '开始执行 SonarQube 代码扫描...'
-                                docker run --rm -u root:root \
-                                    -v ./:/usr/src \
-                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
-                                    -e SONAR_HOST_URL=${params.sqServerUrl} \
-                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
-                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
-                                    -e SONAR_SOURCES=/usr/src \
-                                    -e SONAR_TESTS=/usr/src \
-                                    -e SONAR_EXCLUSIONS=**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
-                                    -e SONAR_TEST_EXCLUSIONS=**/*_test.go \
-                                    -e SONAR_TEST_INCLUSIONS=**/*_test.go \
-                                    -e SONAR_COVERAGE_EXCLUSIONS=**/*_test.go \
-                                    xin8/sonar-scanner-cli:latest
-                                echo 'SonarQube 代码扫描完成'
-                            """
-                        }
-                    }
-                }
-                post {
-                    failure {
-                        script {
-                            dingTalk.post([
-                                    robotId: "${params.robotId}",
-                                    jobName: "${env.SERVICE_NAME}",
-                                    reason : "【${env.STAGE_NAME}】失败！"
-                            ])
-                        }
-                    }
-                }
-            }
             stage("Golang构建") {
                 agent {
                     docker {
@@ -123,8 +90,8 @@ def call(Map<String, Object> config) {
                 }
 
                 steps {
-                    withCredentials([usernamePassword(
-                            credentialsId: 'gitlab-secret',
+                    checkout scm
+                    withCredentials([usernamePassword(credentialsId: 'gitlab-secret',
                             usernameVariable: 'GIT_USERNAME',
                             passwordVariable: 'GIT_PASSWORD')]) {
                         sh label: "Go build in container", script: """
@@ -147,7 +114,26 @@ def call(Map<String, Object> config) {
                         echo "=== Go 环境配置 ==="
                         go env GOPROXY GOSUMDB GOPRIVATE GONOSUMDB
                         echo "=================="
-                        go build -ldflags="-w -s" -o main main.go
+                        
+                        mkdir -p reports
+                                                
+                        echo "\$(go list ./... | grep -v '/test\$' | tr '\\n' ',' | sed 's/,\$//')"
+                        
+                        PACKAGES=\$(go list ./... | grep -v "/test\$" | tr '\\n' ',' | sed 's/,\$//')
+                        echo 'PACKAGES='\$PACKAGES
+
+                        # 运行单元测试并生成报告和覆盖率
+                        echo '运行单元测试并生成报告和覆盖率'
+                        go test -v -json -coverprofile=reports/coverage.out -coverpkg=\$PACKAGES ./test/... > reports/test-suite-report.txt
+
+                        MODULE_NAME=\$(go list -m)
+
+                        # 处理 coverage.out 文件，移除 MODULE_NAME 前缀
+                        echo '处理 coverage.out 文件，移除 MODULE_NAME 前缀'
+                        sed -i "s|\$MODULE_NAME/||g" reports/coverage.out
+
+                        echo '编译二进制文件'
+                        go build -ldflags="-w -s" -o main ${params.mainFilePath}
                         
                         # 清理 git 临时凭据映射（避免后续泄露）
                         git config --global --unset-all url."https://$GIT_USERNAME:$GIT_PASSWORD@${GITLAB_HOST}/".insteadOf || true
@@ -157,11 +143,71 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post([
-                                    robotId: "${params.robotId}",
-                                    jobName: "${env.SERVICE_NAME}",
-                                    reason : "【${env.STAGE_NAME}】失败！"
-                            ])
+                            dingTalk.post([robotId: "${params.robotId}",
+                                           jobName: "${env.SERVICE_NAME}",
+                                           reason : "【${env.STAGE_NAME}】失败！"])
+                        }
+                    }
+                }
+            }
+            stage("代码审核") {
+
+                agent {
+                    docker {
+                        image "${params.sqCliImage}"
+                        // 使用 root 用户并挂载 Maven 缓存目录
+                        args '-u root:root'
+                        reuseNode true
+                    }
+                }
+
+                steps {
+                    withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
+                        script {
+                            // 使用 sh 命令直接运行 Docker 容器
+                            sh """
+                                echo '开始执行 SonarQube 代码扫描...'
+                                echo 'sonar-scanner -v'
+                                sonar-scanner -v
+                            """
+
+                            def coverageStats = GolangCoverageReportAdapter.convert(
+                                    "${WORKSPACE}/reports/coverage.out",
+                                    "${WORKSPACE}/reports/sonar-coverage.xml"
+                            )
+                            echo "代码覆盖率统计信息:"
+                            echo "  总行数: ${coverageStats.totalLines}"
+                            echo "  覆盖行数: ${coverageStats.coveredLines}"
+                            echo "  覆盖率: ${String.format("%.2f", coverageStats.coveragePercent)}%"
+
+                            sh """
+                                # 运行SonarQube扫描
+                                sonar-scanner \
+                                    -Dsonar.host.url=${SQ_SERVER_URL} \
+                                    -Dsonar.token=${SONAR_TOKEN} \
+                                    -Dsonar.projectKey=${SERVICE_NAME} \
+                                    -Dsonar.projectName=${SERVICE_NAME} \
+                                    -Dsonar.projectVersion=${VERSION} \
+                                    -Dsonar.sourceEncoding=UTF-8 \
+                                    -Dsonar.projectBaseDir=. \
+                                    -Dsonar.sources=${SOURCE_DIR} \
+                                    -Dsonar.tests=${TEST_DIR} \
+                                    -Dsonar.language=golang \
+                                    -Dsonar.coverage.exclusions=**/t/**,**/tests/**,**/test/** \
+                                    -Dsonar.exclusions=**/*.pb.go,**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
+                                    -Dsonar.test.inclusions=**/*_test.go \
+                                    -Dsonar.coverageReportPaths=reports/sonar-coverage.xml \
+                                    -Dsonar.go.tests.reportPaths=reports/test-suite-report.txt
+                            """
+                        }
+                    }
+                }
+                post {
+                    failure {
+                        script {
+                            dingTalk.post([robotId: "${params.robotId}",
+                                           jobName: "${env.SERVICE_NAME}",
+                                           reason : "【${env.STAGE_NAME}】失败！"])
                         }
                     }
                 }
@@ -170,8 +216,7 @@ def call(Map<String, Object> config) {
                 steps {
                     script {
                         echo '开始构建Docker镜像多平台构建，然后镜像推送到镜像注册中心...'
-                        withCredentials([usernamePassword(
-                                credentialsId: 'docker-registry-secret',
+                        withCredentials([usernamePassword(credentialsId: 'docker-registry-secret',
                                 usernameVariable: 'REGISTRY_USERNAME',
                                 passwordVariable: 'REGISTRY_PASSWORD')]) {
                             sh label: "Docker build with GitLab credentials", script: """
@@ -204,11 +249,9 @@ def call(Map<String, Object> config) {
                 post {
                     failure {
                         script {
-                            dingTalk.post([
-                                    robotId: "${params.robotId}",
-                                    jobName: "${env.SERVICE_NAME}",
-                                    reason : "【${env.STAGE_NAME}】失败！"
-                            ])
+                            dingTalk.post([robotId: "${params.robotId}",
+                                           jobName: "${env.SERVICE_NAME}",
+                                           reason : "【${env.STAGE_NAME}】失败！"])
                         }
                     }
                 }
@@ -222,45 +265,39 @@ def call(Map<String, Object> config) {
                 }
                 steps {
                     script {
-                        k8sDeployService.deploy([
-                                robotId         : params.robotId,
-                                serviceName     : env.SERVICE_NAME,
-                                namespace       : env.NAMESPACE,
-                                dockerRepository: env.DOCKER_REPOSITORY,
-                                imageName       : env.IMAGE_NAME,
-                                version         : env.VERSION,
-                                k8sServerUrl    : params.k8sServerUrl,
-                                k8sDeployImage  : params.k8sDeployImage,
-                                k8sDeployArgs   : env.K8S_DEPLOY_ARGS,
-                                k8sDeployFileId : env.K8S_DEPLOY_FILE_ID
-                        ])
+                        k8sDeployService.deploy([robotId         : params.robotId,
+                                                 serviceName     : env.SERVICE_NAME,
+                                                 namespace       : env.NAMESPACE,
+                                                 dockerRepository: env.DOCKER_REPOSITORY,
+                                                 imageName       : env.IMAGE_NAME,
+                                                 version         : env.VERSION,
+                                                 k8sServerUrl    : params.k8sServerUrl,
+                                                 k8sDeployImage  : params.k8sDeployImage,
+                                                 k8sDeployArgs   : env.K8S_DEPLOY_ARGS,
+                                                 k8sDeployFileId : env.K8S_DEPLOY_FILE_ID])
                     }
                 }
                 post {
                     success {
                         script {
-                            dingTalk.post([
-                                    robotId    : "${params.robotId}",
-                                    jobName    : "${env.SERVICE_NAME}",
-                                    sqServerUrl: "${params.sqDashboardUrl}"
-                            ])
+                            dingTalk.post([robotId    : "${params.robotId}",
+                                           jobName    : "${env.SERVICE_NAME}",
+                                           sqServerUrl: "${params.sqDashboardUrl}"])
                         }
                     }
                     failure {
                         script {
-                            dingTalk.post([
-                                    robotId: "${params.robotId}",
-                                    jobName: "${env.SERVICE_NAME}",
-                                    reason : "【${env.STAGE_NAME}】失败！"
-                            ])
+                            dingTalk.post([robotId: "${params.robotId}",
+                                           jobName: "${env.SERVICE_NAME}",
+                                           reason : "【${env.STAGE_NAME}】失败！"])
                         }
                     }
                     always { cleanWs() }
                 }
             }
         } //stages
-        post {
-            always { cleanWs() }
-        }
+//        post {
+//            always { cleanWs() }
+//        }
     }
 }

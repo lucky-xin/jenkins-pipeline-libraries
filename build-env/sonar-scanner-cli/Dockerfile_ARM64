@@ -30,11 +30,4 @@ RUN set -eux; \
 
 ENV PATH="$SONAR_SCANNER_HOME/bin:${PATH}"
 
-# 复制自定义的 entrypoint 脚本并设置执行权限
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
-
-# 设置新的入口点
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# 默认命令
-CMD ["sonar-scanner"]
+WORKDIR /usr/src

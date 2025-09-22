@@ -52,9 +52,12 @@ if [[ "$1" = 'sonar-scanner' ]]; then
   add_env_var_as_env_prop "${SONAR_PROJECT_BASE_DIR:-}" "sonar.projectBaseDir"
   add_env_var_as_env_prop "${SONAR_SOURCES:-}" "sonar.sources"
   add_env_var_as_env_prop "${SONAR_TESTS:-}" "sonar.tests"
-  
+  add_env_var_as_env_prop "${SONAR_LANGUAGE:-}" "sonar.language"
+
   # 编码和语言配置
   add_env_var_as_env_prop "${SONAR_SOURCE_ENCODING:-UTF-8}" "sonar.sourceEncoding"
+
+  # Java 语言特定配置
   add_env_var_as_env_prop "${SONAR_JAVA_BINARIES:-}" "sonar.java.binaries"
   add_env_var_as_env_prop "${SONAR_JAVA_LIBRARIES:-}" "sonar.java.libraries"
   add_env_var_as_env_prop "${SONAR_JAVA_SOURCE:-}" "sonar.java.source"
@@ -76,7 +79,18 @@ if [[ "$1" = 'sonar-scanner' ]]; then
   add_env_var_as_env_prop "${SONAR_CS_DOTCOVER_REPORTPATHS:-}" "sonar.cs.dotcover.reportPaths"
   add_env_var_as_env_prop "${SONAR_CS_OPENCOVER_REPORTPATHS:-}" "sonar.cs.opencover.reportPaths"
   add_env_var_as_env_prop "${SONAR_CS_VSTEST_REPORTPATHS:-}" "sonar.cs.vstest.reportPaths"
-  
+
+  # C/C++配置
+  add_env_var_as_env_prop "${SONAR_CXX_FILE_SUFFIXES:-}" "sonar.cxx.file.suffixes"
+  add_env_var_as_env_prop "${SONAR_CXX_COMPILER_PARSER:-}" "sonar.cxx.compiler.parser"
+  add_env_var_as_env_prop "${SONAR_CXX_COMPILER_REPORT_PATH:-}" "sonar.cxx.compiler.reportPath"
+  add_env_var_as_env_prop "${SONAR_CXX_INCLUDE_DIRECTORIES:-}" "sonar.cxx.includeDirectories"
+  add_env_var_as_env_prop "${SONAR_CXX_BUILD_WRAPPER_REPORT_PATHS:-}" "sonar.cxx.build-wrapper.reportPaths"
+  add_env_var_as_env_prop "${SONAR_CXX_COVERAGE_REPORT_PATHS:-}" "sonar.cxx.coverage.reportPaths"
+  add_env_var_as_env_prop "${SONAR_CXX_GCOV_REPORT_PATHS:-}" "sonar.cxx.gcov.reportPaths"
+  add_env_var_as_env_prop "${SONAR_CXX_XUNIT_REPORT_PATHS:-}" "sonar.cxx.xunit.reportPaths"
+  add_env_var_as_env_prop "${SONAR_CXX_DEFINES:-}" "sonar.cxx.defines"
+
   # 排除和包含配置
   add_env_var_as_env_prop "${SONAR_EXCLUSIONS:-}" "sonar.exclusions"
   add_env_var_as_env_prop "${SONAR_INCLUSIONS:-}" "sonar.inclusions"
@@ -113,6 +127,8 @@ if [[ "$1" = 'sonar-scanner' ]]; then
   
   # 如果有额外的参数，则重新构建命令
   if [[ ${#args[@]} -ne 0 ]]; then
+    echo  "=== 构建命令 ==="
+    echo "sonar-scanner ${args[@]}"
     set -- sonar-scanner "${args[@]}" "${@:2}"
   fi
 fi

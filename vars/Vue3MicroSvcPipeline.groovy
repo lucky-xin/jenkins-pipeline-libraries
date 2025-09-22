@@ -34,12 +34,15 @@ def call(Map<String, Object> config) {
     def params = [robotId         : config.robotId ?: '',
                   baseImage       : config.baseImage ?: "nginx:1.27-alpine",
                   buildImage      : config.buildImage ?: "node:24.6.0-alpine",
+                  sourceDir       : config.sourceDir ?: 'src', // 源码目录
+                  testDir         : config.testDir ?: 'test', // 单元测试目录
                   svcName         : config.svcName ?: "",
                   version         : config.version ?: "1.0.0",
                   dockerRepository: config.dockerRepository ?: "47.120.49.65:5001",
                   sqServerUrl     : config.sqServerUrl ?: "http://172.29.35.103:9000",
                   sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
                   k8sServerUrl    : config.k8sServerUrl ?: "https://47.107.91.186:6443",
+                  sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
                   k8sDeployImage  : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployArgs   : config.k8sDeployArgs ?: "-u root:root --entrypoint \"\""]
 
@@ -98,10 +101,7 @@ def call(Map<String, Object> config) {
                         set -eux
                         # 设置 Node.js 内存限制，避免堆内存溢出
                         export NODE_OPTIONS="--max-old-space-size=4096"
-                            
-                        node -v
-                        npm -v
-    
+                                
                         npm config set registry https://registry.npmmirror.com
                         npm config set cache /root/.npm
                         npm config set prefer-offline true
@@ -126,29 +126,65 @@ def call(Map<String, Object> config) {
                 }
             }
             stage("代码审核") {
+                agent {
+                    docker {
+                        image "${params.sqCliImage}"
+                        args '-u root:root'
+                        reuseNode true
+                    }
+                }
                 steps {
                     withCredentials([string(credentialsId: 'sonarqube-token-secret', variable: 'SONAR_TOKEN')]) {
                         script {
                             sh """
-                                echo '开始代码审核...'
-                                docker run --rm -u root:root \
-                                    -v ./:/usr/src \
-                                    -e SONAR_TOKEN=${SONAR_TOKEN} \
-                                    -e SONAR_HOST_URL=${params.sqServerUrl} \
-                                    -e SONAR_PROJECT_KEY=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_NAME=${env.SERVICE_NAME} \
-                                    -e SONAR_PROJECT_VERSION=${env.VERSION} \
-                                    -e SONAR_EXCLUSIONS=**/node_modules/**,**/dist/**,**/*.min.js \
-                                    -e SONAR_SOURCE_ENCODING=UTF-8 \
-                                    -e SONAR_SOURCES=/usr/src \
-                                    -e SONAR_TESTS=/usr/src \
-                                    xin8/sonar-scanner-cli:latest
-                                echo 'SonarQube 代码扫描完成'
+                                echo '开始执行 SonarQube 代码扫描...'
+                                echo '当前工作目录:'
+                                pwd
+                                
+                                echo 'sonar-scanner -v'
+                                sonar-scanner -v        
+
+                                # 运行SonarQube扫描
+                                sonar-scanner \
+                                    -Dsonar.host.url=${params.sqServerUrl} \
+                                    -Dsonar.token=${SONAR_TOKEN} \
+                                    -Dsonar.projectKey=${env.SERVICE_NAME} \
+                                    -Dsonar.projectName=${env.SERVICE_NAME} \
+                                    -Dsonar.projectVersion=${env.VERSION} \
+                                    -Dsonar.sourceEncoding=UTF-8 \
+                                    -Dsonar.projectBaseDir=. \
+                                    -Dsonar.sources=${params.sourceDir} \
+                                    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js,**/coverage/**,**/.nyc_output/** \
+                                    -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
+                                    -Dsonar.typescript.file.suffixes=.ts,.tsx
                             """
                         }
                     }
                 }
                 post {
+                    always {
+                        // 归档报告
+                        script {
+                            if (fileExists("coverage/lcov.info")) {
+                                archiveArtifacts artifacts: "coverage/lcov.info", fingerprint: true
+                            }
+                            if (fileExists("coverage/test-results.xml")) {
+                                archiveArtifacts artifacts: "coverage/test-results.xml", fingerprint: true
+                            }
+                            if (fileExists("coverage/html")) {
+                                archiveArtifacts artifacts: "coverage/html/**/*", fingerprint: true
+                            }
+                        }
+                    }
+                    success {
+                        // 发布HTML覆盖率报告
+                        script {
+                            if (fileExists("coverage/html/index.html")) {
+                                archiveArtifacts artifacts: "coverage/html/**/*", fingerprint: true
+                                echo "HTML覆盖率报告已归档，可在构建产物中下载查看"
+                            }
+                        }
+                    }
                     failure {
                         script {
                             dingTalk.post([

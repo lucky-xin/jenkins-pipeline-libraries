@@ -15,7 +15,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends curl unzip ca-certificates; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p "$SONAR_SCANNER_HOME"; \
-    curl -fsSL "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux-x64.zip" -o /tmp/sonar-scanner.zip; \
+    curl -fsSL "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux-aarch64.zip" -o /tmp/sonar-scanner.zip; \
     unzip -q /tmp/sonar-scanner.zip -d /opt; \
     SC_DIR=$(find /opt -maxdepth 1 -type d -name "sonar-scanner-*" | head -n1); \
     mkdir -p "$SONAR_SCANNER_HOME"; \
@@ -31,3 +31,12 @@ RUN set -eux; \
 ENV PATH="$SONAR_SCANNER_HOME/bin:${PATH}"
 
 WORKDIR /usr/src
+
+# 复制自定义的 entrypoint 脚本并设置执行权限
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# 设置新的入口点
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# 默认命令
+CMD ["sonar-scanner"]
