@@ -128,8 +128,15 @@ def call(Map<String, Object> config) {
                                     HIDDEN_IMPORTS=\$(uv pip list --format=freeze | sed -E 's/==.*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 fi
 
-                                # 运行单元测试并生成覆盖率与JUnit报告（直接调用 pytest，避免本地同名包遮蔽）
-                                pytest ${TEST_DIR} \
+                                # 选择测试命令：若存在 uv.lock，使用 uv 虚拟环境执行
+                                TEST_CMD="pytest"
+                                if [ -f uv.lock ]; then
+                                    uv --version || true
+                                    TEST_CMD="uv run pytest"
+                                fi
+
+                                # 运行单元测试并生成覆盖率与JUnit报告
+                                $TEST_CMD ${TEST_DIR} \
                                     --cov=${SOURCE_DIR} \
                                     --cov-report=xml:reports/coverage.xml \
                                     --cov-report=term \
