@@ -86,7 +86,7 @@ def call(Map<String, Object> config) {
                                 HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\\1#')
                                 SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\\1#')
                                 PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
-                                INDEX_URL="\$SCHEME://$NEXUS_USER:$NEXUS_PASS@\$HOST\$PATH_PART"
+                                INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
 
                                 mkdir -p /root/.pip reports
                                 printf "[global]\\nindex-url = %s\ntrusted-host = %s\n" "\$INDEX_URL" "\$HOST" > /root/.pip/pip.conf
@@ -163,7 +163,7 @@ def call(Map<String, Object> config) {
                                 # 运行SonarQube扫描
                                 sonar-scanner \
                                     -Dsonar.host.url=${SQ_SERVER_URL} \
-                                    -Dsonar.token=${SONAR_TOKEN} \
+                                    -Dsonar.token=\$SONAR_TOKEN \
                                     -Dsonar.projectKey=${SERVICE_NAME} \
                                     -Dsonar.projectName=${SERVICE_NAME} \
                                     -Dsonar.projectVersion=${VERSION} \
@@ -208,7 +208,7 @@ def call(Map<String, Object> config) {
                             sh """
                                 # 打包产物
                                 python3 setup.py sdist bdist_wheel
-                                python3 -m twine upload --repository-url ${NEXUS_URL} dist/*
+                                python3 -m twine upload --repository-url ${NEXUS_URL} --username \$NEXUS_USER --password \$NEXUS_PASS dist/*
                             """
                         }
                     }
