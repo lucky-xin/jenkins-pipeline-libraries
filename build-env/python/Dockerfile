@@ -10,5 +10,3 @@ RUN apt-get update && \
     printf "[global]\nindex-url = %s\ntrusted-host = %s\n" "$PIP_INDEX_URL" "$HOST" > /root/.pip/pip.conf && \
     pip install -i "$PIP_INDEX_URL" -U pip && \
     pip install -i "$PIP_INDEX_URL" pyinstaller uv pytest
-
-
