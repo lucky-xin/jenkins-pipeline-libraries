@@ -21,6 +21,9 @@ show_usage() {
 # 默认配置变量
 DOCKER_REGISTRY="xin8" # Docker 仓库地址
 IMAGE_TAG="latest"
+NEXUS_URL="https://xyz.com/repository/python-group/simple"
+NEXUS_USERNAME="xyz"
+NEXUS_PASSWORD="xyz"
 build_mode="push" # 默认推送到仓库
 
 # 解析命令行参数
@@ -42,6 +45,18 @@ while [[ $# -gt 0 ]]; do
             IMAGE_TAG="$2"
             shift 2
             ;;
+        --nexus-url)
+            NEXUS_URL="$2"
+            shift 2
+            ;;
+        --nexus-username)
+            NEXUS_USERNAME="$2"
+            shift 2
+            ;;
+        --nexus-password)
+            NEXUS_PASSWORD="$2"
+            shift 2
+            ;;
         -h|--help)
             show_usage
             exit 0
@@ -54,7 +69,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-IMAGE_NAME="$DOCKER_REGISTRY/devops/cxx"
+IMAGE_NAME="$DOCKER_REGISTRY/devops/python"
 DOCKERFILE="Dockerfile"
 
 echo "=== 构建 protobuf-c Docker 镜像 ==="
@@ -72,22 +87,15 @@ if [ "$build_mode" = "local" ]; then
       -f "$DOCKERFILE" \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" \
       --platform linux/amd64,linux/arm64/v8 \
+      --build-arg NEXUS_URL="$NEXUS_URL" \
+      --build-arg NEXUS_USERNAME="$NEXUS_USERNAME" \
+      --build-arg NEXUS_PASSWORD="$NEXUS_PASSWORD" \
       --load .
 
     if [ $? -eq 0 ]; then
         echo "=== Docker 本地镜像构建成功 ==="
         echo "镜像信息:"
         docker images | grep "$IMAGE_NAME"
-
-        echo "=== 测试 Docker 镜像 ==="
-        docker run --rm "${IMAGE_NAME}:${IMAGE_TAG}" /bin/bash -c "
-            echo 'Docker 镜像测试:'
-            autoconf --version | head -1
-            automake --version | head -1
-            protoc --version
-            cmake --version | head -1
-            echo '镜像测试完成'
-        "
 
         echo "=== 本地构建完成 ==="
         echo "使用方法:"
@@ -102,6 +110,9 @@ else
       -f "$DOCKERFILE" \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" \
       --platform linux/amd64,linux/arm64/v8 \
+      --build-arg NEXUS_URL="$NEXUS_URL" \
+      --build-arg NEXUS_USERNAME="$NEXUS_USERNAME" \
+      --build-arg NEXUS_PASSWORD="$NEXUS_PASSWORD" \
       --push .
 
     if [ $? -eq 0 ]; then

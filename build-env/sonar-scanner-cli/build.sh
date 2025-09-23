@@ -82,9 +82,8 @@ build_image() {
     docker buildx build \
         --platform "${PLATFORMS}" \
         --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
-        --push \
         --file "${DOCKERFILE}" \
-        .
+        --push .
     
     log_success "多平台镜像构建并推送完成"
 }
@@ -98,9 +97,8 @@ build_local() {
     docker buildx build \
         --platform "${PLATFORMS}" \
         --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
-        --load \
         --file "${DOCKERFILE}" \
-        .
+        --load .
     
     log_success "本地镜像构建完成"
 }
