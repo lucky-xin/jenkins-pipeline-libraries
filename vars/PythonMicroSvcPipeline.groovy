@@ -136,7 +136,7 @@ def call(Map<String, Object> config) {
                                 fi
 
                                 # 运行单元测试并生成覆盖率与JUnit报告
-                                $TEST_CMD ${TEST_DIR} \
+                                \$TEST_CMD ${TEST_DIR} \
                                     --cov=${SOURCE_DIR} \
                                     --cov-report=xml:reports/coverage.xml \
                                     --cov-report=term \
