@@ -128,8 +128,8 @@ def call(Map<String, Object> config) {
                                     HIDDEN_IMPORTS=\$(uv pip list --format=freeze | sed -E 's/==.*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 fi
 
-                                # 运行单元测试并生成覆盖率与JUnit报告
-                                python -m pytest ${TEST_DIR} \
+                                # 运行单元测试并生成覆盖率与JUnit报告（直接调用 pytest，避免本地同名包遮蔽）
+                                pytest ${TEST_DIR} \
                                     --cov=${SOURCE_DIR} \
                                     --cov-report=xml:reports/coverage.xml \
                                     --cov-report=term \
