@@ -126,15 +126,11 @@ def call(Map<String, Object> config) {
                                 fi
 
                                 # 运行单元测试并生成覆盖率与JUnit报告
-                                if command -v pytest >/dev/null 2>&1; then
-                                  python -m pytest ${TEST_DIR} \
+                                python -m pytest ${TEST_DIR} \
                                     --cov=${SOURCE_DIR} \
                                     --cov-report=xml:reports/coverage.xml \
                                     --cov-report=term \
                                     --junitxml=reports/junit.xml
-                                else
-                                  echo "未检测到 pytest，跳过测试阶段。"
-                                fi
                                 
                                 # 使用PyInstaller打包项目（如需）
                                 if command -v pyinstaller >/dev/null 2>&1; then
