@@ -196,7 +196,7 @@ def call(Map<String, Object> config) {
                                     -Dsonar.coverage.exclusions=**/t/**,**/tests/**,**/test/** \
                                     -Dsonar.exclusions=**/*.pb.go,**/vendor/**,**/node_modules/**,**/*.pb.go,**/testdata/** \
                                     -Dsonar.test.inclusions=**/*_test.go \
-                                    -Dsonar.coverageReportPaths=reports/sonar-coverage.xml \
+                                    -Dsonar.go.coverage.reportPaths=reports/coverage.out \
                                     -Dsonar.go.tests.reportPaths=reports/test-suite-report.txt
                             """
                         }
