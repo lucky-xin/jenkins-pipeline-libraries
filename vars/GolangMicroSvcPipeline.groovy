@@ -169,18 +169,6 @@ def call(Map<String, Object> config) {
                                 echo '开始执行 SonarQube 代码扫描...'
                                 echo 'sonar-scanner -v'
                                 sonar-scanner -v
-                            """
-
-                            def coverageStats = GolangCoverageReportAdapter.convert(
-                                    "${WORKSPACE}/reports/coverage.out",
-                                    "${WORKSPACE}/reports/sonar-coverage.xml"
-                            )
-                            echo "代码覆盖率统计信息:"
-                            echo "  总行数: ${coverageStats.totalLines}"
-                            echo "  覆盖行数: ${coverageStats.coveredLines}"
-                            echo "  覆盖率: ${String.format("%.2f", coverageStats.coveragePercent)}%"
-
-                            sh """
                                 # 运行SonarQube扫描
                                 sonar-scanner \
                                     -Dsonar.host.url=${SQ_SERVER_URL} \
