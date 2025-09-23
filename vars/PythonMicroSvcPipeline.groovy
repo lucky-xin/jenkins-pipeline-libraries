@@ -133,7 +133,7 @@ def call(Map<String, Object> config) {
                                 
                                 # 使用PyInstaller打包项目（如需）
                                 if command -v pyinstaller >/dev/null 2>&1; then
-                                    pyinstaller --onefile $HIDDEN_IMPORTS --clean -n main ${MAIN_FILE_PATH}
+                                    pyinstaller --onefile \$HIDDEN_IMPORTS --clean -n main ${MAIN_FILE_PATH}
                                 fi
                             """
                         }
