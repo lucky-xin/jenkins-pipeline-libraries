@@ -1,5 +1,3 @@
-import xyz.dev.ops.adapter.GolangCoverageReportAdapter
-
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
 
@@ -44,6 +42,7 @@ def call(Map<String, Object> config) {
                   sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
                   dockerRepository: config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl    : config.k8sServerUrl ?: "https://47.107.91.186:6443",
+                  nexusUrl: config.nexusUrl ?: "http://172.29.35.103:8081/repository/python-group/simple",
                   k8sDeployImage  : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployArgs   : config.k8sDeployArgs ?: "-u root:root --entrypoint \"\""]
 
@@ -78,6 +77,8 @@ def call(Map<String, Object> config) {
             TEST_DIR = "${params.testDir}"
             SQ_SERVER_URL = "${params.sqServerUrl}"
             MAIN_FILE_PATH = "${params.mainFilePath}"
+            NEXUS_URL = "${params.nexusUrl}"
+            NEXUS_CREDENTIALS_ID = 'nexus-credentials'    // 你在 Jenkins 中配置的凭据 ID
         }
         stages {
             stage("Python构建") {
@@ -91,43 +92,54 @@ def call(Map<String, Object> config) {
 
                 steps {
                     checkout scm
-                    sh label: "Python build in container", script: """
-                        set -eux
-                        python --version
-                        pip --version
+                    script {
+                        withCredentials([usernamePassword(
+                                credentialsId: "${env.NEXUS_CREDENTIALS_ID}",
+                                usernameVariable: 'NEXUS_USER',
+                                passwordVariable: 'NEXUS_PASS')]) {
 
-                        # 安装依赖（若存在 requirements.txt）
-                        HIDDEN_IMPORTS=""
-                        if [ -f requirements.txt ]; then
-                          pip install --timeout 60 --no-cache-dir -r requirements.txt
-                          # 自动提取 requirements.txt 模块并作为 hidden-import
-                          HIDDEN_IMPORTS=\$(cat requirements.txt | grep -v "==" | awk '｛printf "--hidden-import=%s "， \$1｝')
-                        fi
-                        # 安装依赖（若存在 uv.lock）
-                        if [ -f uv.lock ]; then
-                          uv sync --no-dev --frozen
-                          HIDDEN_IMPORTS=\$(uv list | grep -v "==" | awk '｛printf "--hidden-import=%s "， \$1｝')
-                        fi
-                        
-                        pyinstaller --onefile \$HIDDEN_IMPORTS --clean -n main ${MAIN_FILE_PATH}
+                            sh label: "Python build in container", script: """
+                                set -eux
+                                python --version
+                                pip --version
+                                # 配置 Nexus 私仓并安装依赖
+                                HIDDEN_IMPORTS=""
+                                HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\1#')
+                                SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\1#')
+                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
+                                INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
 
-                        mkdir -p reports
+                                mkdir -p /root/.pip reports
+                                printf "[global]\\nindex-url = %s\ntrusted-host = %s\n" "\$INDEX_URL" "\$HOST" > /root/.pip/pip.conf
 
-                        # 运行单元测试并生成覆盖率与JUnit报告
-                        if command -v pytest >/dev/null 2>&1; then
-                          python -m pytest ${TEST_DIR} \
-                            --cov=${SOURCE_DIR} \
-                            --cov-report=xml:reports/coverage.xml \
-                            --cov-report=term \
-                            --junitxml=reports/junit.xml
-                        else
-                          echo "未检测到 pytest，跳过测试阶段。"
-                        fi
-                        
-                        # 使用PyInstaller打包项目
-                        # 这里我们指定生成单个可执行文件（--onefile）并且不显示控制台窗口（对于GUI应用，如果需要控制台则去掉-w）
-                        pyinstaller --onefile --clean -n main ${MAIN_FILE_PATH}
-                    """
+                                if [ -f requirements.txt ]; then
+                                  # 使用 pip + requirements.txt 安装
+                                  pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" -r requirements.txt
+                                elif [ -f uv.lock ]; then
+                                  # 使用 uv + uv.lock 安装
+                                  export UV_INDEX_URL="\$INDEX_URL"
+                                  export UV_EXTRA_INDEX_URL="\$INDEX_URL"
+                                  uv sync --no-dev --frozen
+                                fi
+
+                                # 运行单元测试并生成覆盖率与JUnit报告
+                                if command -v pytest >/dev/null 2>&1; then
+                                  python -m pytest ${TEST_DIR} \
+                                    --cov=${SOURCE_DIR} \
+                                    --cov-report=xml:reports/coverage.xml \
+                                    --cov-report=term \
+                                    --junitxml=reports/junit.xml
+                                else
+                                  echo "未检测到 pytest，跳过测试阶段。"
+                                fi
+                                
+                                # 使用PyInstaller打包项目（如需）
+                                if command -v pyinstaller >/dev/null 2>&1; then
+                                  pyinstaller --onefile \$HIDDEN_IMPORTS --clean -n main ${MAIN_FILE_PATH}
+                                fi
+                            """
+                        }
+                    }
                 }
                 post {
                     failure {
@@ -136,6 +148,13 @@ def call(Map<String, Object> config) {
                                            jobName: "${env.SERVICE_NAME}",
                                            reason : "【${env.STAGE_NAME}】失败！"])
                         }
+                    }
+                    always {
+                        sh label: "清理Nexus与pip敏感配置", script: """
+                            set +e
+                            rm -f /root/.pip/pip.conf /root/.config/pip/pip.conf || true
+                            unset NEXUS_USER NEXUS_PASS INDEX_URL UV_INDEX_URL UV_EXTRA_INDEX_URL || true
+                        """
                     }
                 }
             }
