@@ -107,11 +107,11 @@ class GolangCoverageReportAdapter {
                             }
                         } else {
                             // 添加新的行数据
-                            fileData[fileName] << [
-                                lineNumber: lineNum,
-                                hitCount  : hits,
-                                covered   : hits > 0
-                            ]
+                            fileData[fileName] << ([
+                                    lineNumber: lineNum,
+                                    hitCount  : hits,
+                                    covered   : hits > 0
+                            ] as Map<String, Object>)
                         }
                     }
 
