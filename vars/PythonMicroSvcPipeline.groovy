@@ -123,8 +123,8 @@ def call(Map<String, Object> config) {
                                     sed -i 's#@http://8.145.35.103:8081#http://172.29.35.103:8081#g' uv.lock
                                     export UV_INDEX_URL="\$INDEX_URL"
                                     export UV_EXTRA_INDEX_URL="\$INDEX_URL"
-                                    # CI 环境需要测试依赖，包含 dev 依赖
-                                    uv sync --dev --frozen
+                                    # CI 环境需要完整依赖，包含所有分组（prod/dev/extra）
+                                    uv sync --all-groups --frozen
                                     HIDDEN_IMPORTS=\$(uv pip list --format=freeze | sed -E 's/==.*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 fi
 
