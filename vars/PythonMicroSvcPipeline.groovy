@@ -42,7 +42,7 @@ def call(Map<String, Object> config) {
                   sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
                   dockerRepository: config.dockerRepository ?: "47.120.49.65:5001",
                   k8sServerUrl    : config.k8sServerUrl ?: "https://47.107.91.186:6443",
-                  nexusUrl: config.nexusUrl ?: "http://172.29.35.103:8081/repository/python-group/simple",
+                  nexusUrl        : config.nexusUrl ?: "http://172.29.35.103:8081/repository/python-group/simple",
                   k8sDeployImage  : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployArgs   : config.k8sDeployArgs ?: "-u root:root --entrypoint \"\""]
 
@@ -105,7 +105,7 @@ def call(Map<String, Object> config) {
                                 HIDDEN_IMPORTS=""
                                 HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\1#')
                                 SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\1#')
-                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
+                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\1#')
                                 INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
 
                                 mkdir -p /root/.pip reports
