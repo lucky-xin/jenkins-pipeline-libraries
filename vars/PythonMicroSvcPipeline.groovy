@@ -123,9 +123,10 @@ def call(Map<String, Object> config) {
                                     sed -i 's#@http://8.145.35.103:8081#http://172.29.35.103:8081#g' uv.lock
                                     export UV_INDEX_URL="\$INDEX_URL"
                                     export UV_EXTRA_INDEX_URL="\$INDEX_URL"
-                                    # CI 环境需要完整依赖，包含所有分组（prod/dev/extra）
-                                    uv sync --all-groups --frozen
+                                    # CI 环境需要完整依赖，包含所有分组与 extras
+                                    uv sync --all-groups --all-extras --frozen
                                     HIDDEN_IMPORTS=\$(uv pip list --format=freeze | sed -E 's/==.*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
+                                    echo "\$HIDDEN_IMPORTS"
                                 fi
 
                                 # 选择测试命令：若存在 uv.lock，使用 uv 虚拟环境执行
@@ -133,6 +134,22 @@ def call(Map<String, Object> config) {
                                 if [ -f uv.lock ]; then
                                     uv --version || true
                                     TEST_CMD="uv run pytest"
+                                fi
+
+                                # 在 uv 模式下校验 fastapi 是否可用，并打印提示
+                                if [ -f uv.lock ]; then
+                                    echo "uv pip list"
+                                    uv pip list
+                                    
+                                    uv pip list | grep -i fastapi || true
+                                    uv run python - <<'PY'
+import sys
+try:
+    import fastapi
+    print('[check] fastapi available, version:', getattr(fastapi, '__version__', 'unknown'))
+except Exception as e:
+    print('[check] fastapi import failed:', e)
+PY
                                 fi
 
                                 # 运行单元测试并生成覆盖率与JUnit报告
