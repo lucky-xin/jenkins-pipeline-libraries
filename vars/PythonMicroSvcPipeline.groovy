@@ -103,9 +103,9 @@ def call(Map<String, Object> config) {
                                 pip --version
                                 # 配置 Nexus 私仓并安装依赖
                                 HIDDEN_IMPORTS=""
-                                HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\1#')
-                                SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\1#')
-                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\1#')
+                                HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\\1#')
+                                SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\\1#')
+                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
                                 INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
 
                                 mkdir -p /root/.pip reports
