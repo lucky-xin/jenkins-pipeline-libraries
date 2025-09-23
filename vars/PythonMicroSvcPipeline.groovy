@@ -106,7 +106,7 @@ def call(Map<String, Object> config) {
                                 HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\\1#')
                                 SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\\1#')
                                 PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
-                                INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
+                                INDEX_URL="\$SCHEME://$NEXUS_USER:$NEXUS_PASS@\$HOST\$PATH_PART"
 
                                 mkdir -p /root/.pip reports
                                 printf "[global]\\nindex-url = %s\ntrusted-host = %s\n" "\$INDEX_URL" "\$HOST" > /root/.pip/pip.conf
