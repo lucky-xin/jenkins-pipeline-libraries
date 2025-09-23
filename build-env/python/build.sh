@@ -21,9 +21,6 @@ show_usage() {
 # 默认配置变量
 DOCKER_REGISTRY="xin8" # Docker 仓库地址
 IMAGE_TAG="latest"
-NEXUS_URL="https://xyz.com/repository/python-group/simple"
-NEXUS_USERNAME="xyz"
-NEXUS_PASSWORD="xyz"
 build_mode="push" # 默认推送到仓库
 
 # 解析命令行参数
@@ -43,18 +40,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -t|--tag)
             IMAGE_TAG="$2"
-            shift 2
-            ;;
-        --nexus-url)
-            NEXUS_URL="$2"
-            shift 2
-            ;;
-        --nexus-username)
-            NEXUS_USERNAME="$2"
-            shift 2
-            ;;
-        --nexus-password)
-            NEXUS_PASSWORD="$2"
             shift 2
             ;;
         -h|--help)
@@ -87,9 +72,6 @@ if [ "$build_mode" = "local" ]; then
       -f "$DOCKERFILE" \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" \
       --platform linux/amd64,linux/arm64/v8 \
-      --build-arg NEXUS_URL="$NEXUS_URL" \
-      --build-arg NEXUS_USERNAME="$NEXUS_USERNAME" \
-      --build-arg NEXUS_PASSWORD="$NEXUS_PASSWORD" \
       --load .
 
     if [ $? -eq 0 ]; then
@@ -110,9 +92,6 @@ else
       -f "$DOCKERFILE" \
       -t "${IMAGE_NAME}:${IMAGE_TAG}" \
       --platform linux/amd64,linux/arm64/v8 \
-      --build-arg NEXUS_URL="$NEXUS_URL" \
-      --build-arg NEXUS_USERNAME="$NEXUS_USERNAME" \
-      --build-arg NEXUS_PASSWORD="$NEXUS_PASSWORD" \
       --push .
 
     if [ $? -eq 0 ]; then

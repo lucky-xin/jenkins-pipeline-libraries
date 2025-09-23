@@ -115,10 +115,13 @@ def call(Map<String, Object> config) {
                                 if [ -f requirements.txt ]; then
                                   # 使用 pip + requirements.txt 安装
                                   pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" -r requirements.txt
+                                  # 自动提取 requirements.txt 模块并作为 hidden-import
+                                  HIDDEN_IMPORTS=\$(cat requirements.txt | grep -v "==" | awk '｛printf "--hidden-import=%s "， \$1｝')
                                 elif [ -f uv.lock ]; then
                                   # 使用 uv + uv.lock 安装
                                   export UV_INDEX_URL="\$INDEX_URL"
                                   export UV_EXTRA_INDEX_URL="\$INDEX_URL"
+                                  HIDDEN_IMPORTS=\$(uv list | grep -v "==" | awk '｛printf "--hidden-import=%s "， \$1｝')
                                   uv sync --no-dev --frozen
                                 fi
 
