@@ -6,15 +6,21 @@ ARG NEXUS_USERNAME
 ARG NEXUS_PASSWORD
 ENV NEXUS_URL=${NEXUS_URL}
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&\
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
     apk update && \
-    apk add --no-cache git && \
+    apk add --no-cache git sed && \
     mkdir -p /root/.pip && \
-    pip config set global.index-url ${NEXUS_URL} && \
-    echo "[global]\n\
-    index-url = https://${NEXUS_USERNAME}:${NEXUS_PASSWORD}@${NEXUS_URL}/repository/pypi-group/simple\n\
-    trusted-host = ${NEXUS_HOST}" > /root/.pip/pip.conf && \
+    HOST=$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*$#\1#') && \
+    SCHEME=$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\1#') && \
+    PATH_PART=$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)$#\1#') && \
+    if [ -n "$NEXUS_USERNAME" ] && [ -n "$NEXUS_PASSWORD" ]; then \
+      INDEX_URL="$SCHEME://$NEXUS_USERNAME:$NEXUS_PASSWORD@$HOST$PATH_PART"; \
+    else \
+      INDEX_URL="$NEXUS_URL"; \
+    fi && \
+    pip config set global.index-url "$INDEX_URL" && \
+    printf "[global]\nindex-url = %s\ntrusted-host = %s\n" "$INDEX_URL" "$HOST" > /root/.pip/pip.conf && \
     pip install -U pip && \
-    RUN pip install pyinstaller uv
+    pip install pyinstaller uv
 
 

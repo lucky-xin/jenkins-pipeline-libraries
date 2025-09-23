@@ -32,7 +32,7 @@ def call(Map<String, Object> config) {
      *  k8sDeployArgs  kubectl 容器启动参数（可选）*/
     // 设置默认值
     def params = [robotId         : config.robotId ?: '',
-                  baseImage       : config.baseImage ?: "python:3.9-alpine",
+                  baseImage       : config.baseImage ?: "python:3.12-alpine",
                   buildImage      : config.buildImage ?: "xin8/devops/python:latest",
                   sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
                   mainFilePath    : config.mainFilePath ?: "main.py",
