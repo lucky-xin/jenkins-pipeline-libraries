@@ -136,22 +136,6 @@ def call(Map<String, Object> config) {
                                     TEST_CMD="uv run pytest"
                                 fi
 
-                                # 在 uv 模式下校验 fastapi 是否可用，并打印提示
-                                if [ -f uv.lock ]; then
-                                    echo "uv pip list"
-                                    uv pip list
-                                    
-                                    uv pip list | grep -i fastapi || true
-                                    uv run python - <<'PY'
-import sys
-try:
-    import fastapi
-    print('[check] fastapi available, version:', getattr(fastapi, '__version__', 'unknown'))
-except Exception as e:
-    print('[check] fastapi import failed:', e)
-PY
-                                fi
-
                                 # 运行单元测试并生成覆盖率与JUnit报告
                                 \$TEST_CMD ${TEST_DIR} \
                                     --cov=${SOURCE_DIR} \
@@ -218,7 +202,7 @@ PY
                                     -Dsonar.python.version=3.12 \
                                     -Dsonar.exclusions=**/venv/**,**/.venv/**,**/node_modules/** \
                                     -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
-                                    -Dsonar.junit.reportPaths=reports/junit.xml
+                                    -Dsonar.python.xunit.reportPath=reports/junit.xml
                             """
                         }
                     }
