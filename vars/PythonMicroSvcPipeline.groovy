@@ -114,6 +114,8 @@ def call(Map<String, Object> config) {
                                 if [ -f requirements.txt ]; then
                                     # 使用 pip + requirements.txt 安装
                                     pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" -r requirements.txt
+                                    # 确保测试所需依赖存在
+                                    pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" pytest pytest-cov
                                     # 自动提取 requirements.txt 模块并作为 hidden-import（仅保留包名并前缀参数）
                                     HIDDEN_IMPORTS=\$(grep -E '^[A-Za-z0-9_.-]+' requirements.txt | sed -E 's/[<>=!].*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 elif [ -f uv.lock ]; then
@@ -121,7 +123,8 @@ def call(Map<String, Object> config) {
                                     sed -i 's#@http://8.145.35.103:8081#http://172.29.35.103:8081#g' uv.lock
                                     export UV_INDEX_URL="\$INDEX_URL"
                                     export UV_EXTRA_INDEX_URL="\$INDEX_URL"
-                                    uv sync --no-dev --frozen
+                                    # CI 环境需要测试依赖，包含 dev 依赖
+                                    uv sync --dev --frozen
                                     HIDDEN_IMPORTS=\$(uv pip list --format=freeze | sed -E 's/==.*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 fi
 
