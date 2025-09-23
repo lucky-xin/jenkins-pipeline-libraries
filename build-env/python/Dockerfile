@@ -9,4 +9,4 @@ RUN apt-get update && \
     HOST=$(echo "$PIP_INDEX_URL" | sed -E 's#^https?://([^/]+)/?.*$#\1#') && \
     printf "[global]\nindex-url = %s\ntrusted-host = %s\n" "$PIP_INDEX_URL" "$HOST" > /root/.pip/pip.conf && \
     pip install -i "$PIP_INDEX_URL" -U pip && \
-    pip install -i "$PIP_INDEX_URL" pyinstaller uv pytest pytest-cov
+    pip install -i "$PIP_INDEX_URL" pyinstaller uv pytest pytest-cov setuptools wheel twine

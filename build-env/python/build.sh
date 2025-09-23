@@ -21,7 +21,7 @@ show_usage() {
 # 默认配置变量
 DOCKER_REGISTRY="xin8" # Docker 仓库地址
 IMAGE_TAG="latest"
-build_mode="push" # 默认推送到仓库
+build_mode="local" # 默认推送到仓库
 
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
