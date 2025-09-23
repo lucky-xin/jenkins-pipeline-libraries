@@ -113,16 +113,16 @@ def call(Map<String, Object> config) {
 
                                 if [ -f requirements.txt ]; then
                                     # 使用 pip + requirements.txt 安装
-                                    pip install --timeout 60 --no-cache-dir --index-url "$INDEX_URL" --trusted-host "$HOST" -r requirements.txt
+                                    pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" -r requirements.txt
                                     # 自动提取 requirements.txt 模块并作为 hidden-import
-                                    HIDDEN_IMPORTS=$(grep -E '^[A-Za-z0-9_.-]+' requirements.txt | sed 's/[<>=!].*$//' | awk '{printf "--hidden-import=%s ", $1}')
+                                    HIDDEN_IMPORTS=\$(grep -E '^[A-Za-z0-9_.-]+' requirements.txt | sed 's/[<>=!].*$//' | awk '{printf "--hidden-import=%s ", \$1}')
                                 elif [ -f uv.lock ]; then
                                     # 使用 uv + uv.lock 安装
                                     export UV_INDEX_URL="$INDEX_URL"
                                     export UV_EXTRA_INDEX_URL="$INDEX_URL"
                                     uv sync --no-dev --frozen
                                   
-                                    HIDDEN_IMPORTS=$(uv pip list --format=freeze | awk -F'==' '{printf "--hidden-import=%s ", $1}')
+                                    HIDDEN_IMPORTS=\$(uv pip list --format=freeze | awk -F'==' '{printf "--hidden-import=%s ", \$1}')
                                 fi
 
                                 # 运行单元测试并生成覆盖率与JUnit报告
