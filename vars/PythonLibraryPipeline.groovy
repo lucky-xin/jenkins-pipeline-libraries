@@ -209,7 +209,7 @@ def call(Map<String, Object> config) {
                                 INDEX_URL="\$SCHEME://\$HOST/repository/python-hosted/"
                                 
                                 python3 setup.py sdist bdist_wheel
-                                python3 -m twine upload --repository-url $INDEX_URL --username \$NEXUS_USER --password \$NEXUS_PASS dist/*
+                                python3 -m twine upload --repository-url \$INDEX_URL --username \$NEXUS_USER --password \$NEXUS_PASS dist/*
                             """
                         }
                     }
