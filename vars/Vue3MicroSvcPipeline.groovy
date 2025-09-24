@@ -169,13 +169,27 @@ def call(Map<String, Object> config) {
                                 echo '当前工作目录:'
                                 pwd
                                 
+                                # 若容器内缺少 Node.js，尝试按发行版安装（支持 apk/apt/yum）
+                                if ! command -v node >/dev/null 2>&1; then
+                                  echo 'Node.js 不存在，开始安装...'
+                                  if command -v apk >/dev/null 2>&1; then
+                                    apk add --no-cache nodejs npm
+                                  elif command -v apt-get >/dev/null 2>&1; then
+                                    apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
+                                  elif command -v yum >/dev/null 2>&1; then
+                                    yum install -y nodejs npm || true
+                                  fi
+                                fi
+
+                                echo 'node -v'; node -v || true
+                                echo 'npm -v'; npm -v || true
                                 echo 'sonar-scanner -v'
                                 sonar-scanner -v        
 
                                 # 运行SonarQube扫描
                                 sonar-scanner \
                                     -Dsonar.host.url=${params.sqServerUrl} \
-                                    -Dsonar.token=${SONAR_TOKEN} \
+                                    -Dsonar.token=\$SONAR_TOKEN \
                                     -Dsonar.projectKey=${env.SERVICE_NAME} \
                                     -Dsonar.projectName=${env.SERVICE_NAME} \
                                     -Dsonar.projectVersion=${env.VERSION} \
