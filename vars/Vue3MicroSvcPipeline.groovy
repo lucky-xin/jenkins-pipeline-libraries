@@ -5,7 +5,7 @@ import xyz.dev.ops.notify.DingTalk
  * Vue3 微服务前端通用流水线（vars）
  *
  * 功能：
- *  - Node 构建（Yarn）
+ *  - Node.js 构建（npm/yarn）
  *  - SonarQube 代码扫描
  *  - Docker 多架构镜像构建与推送
  *  - Kubernetes 发布（模板渲染）

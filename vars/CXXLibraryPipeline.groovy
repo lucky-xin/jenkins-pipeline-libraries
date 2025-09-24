@@ -3,20 +3,41 @@ import xyz.dev.ops.adapter.LcovUnitTestReportAdapter
 import xyz.dev.ops.notify.DingTalk
 
 /**
- * Maven 库项目发布流水线（vars）
+ * C++ 库项目发布流水线（vars）
  *
- * 功能：读取 POM 信息，执行 Maven 构建与部署（deploy），并推送变更通知。
+ * 功能：
+ *  - 支持 Autotools 和 CMake 构建系统
+ *  - 代码覆盖率测试（LCOV）
+ *  - 静态代码分析（cppcheck）
+ *  - SonarQube 代码质量扫描
+ *  - 生成文档（Doxygen）
+ *  - 上传到 Nexus 仓库
+ *  - 多平台支持
+ * 
  * 先决条件：
- *  - Config File Provider: Maven settings.xml（fileId: 42697037-54bd-44a1-80c2-7a97d30f2266）
+ *  - 凭据：nexus-credentials、sonarqube-token-secret
+ *  - Jenkins 节点具备 docker 权限
  */
 
 def call(Map<String, Object> config) {
     /**
      * 入参（config）：
      *  robotId        钉钉机器人ID（可选）
-     *  builderImage   构建镜像（默认 xin8/devops/cxx:latest）
-     *  sqDashboardUrl SonarQube 外网地址（可选，仅用于通知展示）
-     *  nexusUrl       Nexus3依赖仓库地址 外网地址（可选，仅用于通知展示）
+     *  projectName    项目名称（必填）
+     *  version        版本号（默认：1.0.0）
+     *  buildDir       构建输出目录（默认：build）
+     *  buildType       构建类型（默认：Release）
+     *  buildSystem     构建系统（autotools/cmake/both）
+     *  installDir      安装目录（默认：install）
+     *  buildImage      构建镜像（默认：xin8/devops/cxx:latest）
+     *  sqCliImage      SonarQube 扫描镜像（默认：xin8/devops/sonar-scanner-cli:latest）
+     *  enableTests      是否运行测试（默认：true）
+     *  enableDocs       是否生成文档（默认：true）
+     *  cmakeFlags       自定义 CMake 参数
+     *  sqServerUrl      SonarQube 内网地址
+     *  sqDashboardUrl   SonarQube 外网地址
+     *  nexusUrl         Nexus 仓库地址
+     *  nexusRepo        Nexus 仓库名称
      */
     // 设置默认值
     def params = [

@@ -18,6 +18,8 @@
 | **Maven**  | `MavenMicroSvcPipeline`  | `maven:3.9.11-amazoncorretto-17` | Kubernetes + Docker |
 | **Vue3**   | `Vue3MicroSvcPipeline`   | `node:24.6.0-alpine`             | Kubernetes + Nginx  |
 | **Golang** | `GolangMicroSvcPipeline` | `golang:1.25`                    | Kubernetes + Alpine |
+| **Python** | `PythonMicroSvcPipeline` | `xin8/devops/python:latest`      | Kubernetes + Alpine |
+| **Python库** | `PythonLibraryPipeline` | `xin8/devops/python:latest`      | Nexus 仓库            |
 | **C++**    | `CXXLibraryPipeline`     | `xin8/devops/cxx:latest`         | Nexus 仓库            |
 
 ### 核心特性
@@ -286,7 +288,81 @@ CXXLibraryPipeline([
 - `nexusUrl` - Nexus 仓库地址
 - `nexusRepo` - Nexus 仓库名称
 
-### 6. MavenLibraryPipeline.groovy
+### 6. PythonMicroSvcPipeline.groovy
+
+**功能：** Python 微服务通用流水线
+
+- Python 构建与测试（支持 pip/uv 依赖管理）
+- SonarQube 代码扫描
+- PyInstaller 打包（可选）
+- Docker 多架构镜像构建与推送
+- Kubernetes 发布
+
+**使用方法：**
+
+```groovy
+@Library('jenkins-pipeline-libraries') _
+
+PythonMicroSvcPipeline([
+        robotId         : 'your-dingtalk-robot-id',
+        svcName         : 'your-python-service',
+        version         : '1.0.0',
+        dockerRepository: 'your-registry.com:5001',
+        k8sServerUrl    : 'https://your-k8s-api:6443'
+])
+```
+
+**参数说明：**
+
+- `robotId` - 钉钉机器人ID（可选）
+- `baseImage` - 基础镜像（默认：python:3.12-alpine）
+- `buildImage` - 构建镜像（默认：xin8/devops/python:latest）
+- `svcName` - 服务名（必填）
+- `version` - 大版本号（默认：1.0.0）
+- `mainFilePath` - 主文件路径（默认：main.py）
+- `sourceDir` - 源码目录（默认：src）
+- `testDir` - 测试目录（默认：test）
+- `sqServerUrl` - SonarQube 内网地址
+- `sqDashboardUrl` - SonarQube 外网地址
+- `dockerRepository` - 镜像仓库地址
+- `k8sServerUrl` - k8s API 地址
+
+### 7. PythonLibraryPipeline.groovy
+
+**功能：** Python 公共依赖项目通用流水线
+
+- Python 构建与测试（支持 pip/uv 依赖管理）
+- SonarQube 代码扫描
+- Python 包构建与发布（sdist + wheel）
+- 推送到 Nexus 私有仓库
+
+**使用方法：**
+
+```groovy
+@Library('jenkins-pipeline-libraries') _
+
+PythonLibraryPipeline([
+        robotId    : 'your-dingtalk-robot-id',
+        svcName    : 'your-python-library',
+        version    : '1.0.0',
+        nexusUrl   : 'http://your-nexus:8081'
+])
+```
+
+**参数说明：**
+
+- `robotId` - 钉钉机器人ID（可选）
+- `baseImage` - 基础镜像（默认：python:3.12-alpine）
+- `buildImage` - 构建镜像（默认：xin8/devops/python:latest）
+- `svcName` - 服务名（必填）
+- `version` - 大版本号（默认：1.0.0）
+- `sourceDir` - 源码目录（默认：src）
+- `testDir` - 测试目录（默认：test）
+- `sqServerUrl` - SonarQube 内网地址
+- `sqDashboardUrl` - SonarQube 外网地址
+- `nexusUrl` - Nexus 仓库地址
+
+### 8. MavenLibraryPipeline.groovy
 
 **功能：** Maven 库项目发布流水线
 
@@ -564,7 +640,34 @@ GolangMicroSvcPipeline([
 ])
 ```
 
-### 4. C++ 库项目 Jenkinsfile
+### 4. Python 微服务项目 Jenkinsfile
+
+```groovy
+@Library('jenkins-pipeline-libraries') _
+
+PythonMicroSvcPipeline([
+        robotId         : 'your-dingtalk-robot-id',
+        svcName         : 'python-api-service',
+        version         : '1.0.0',
+        dockerRepository: 'your-registry.com:5001',
+        k8sServerUrl    : 'https://your-k8s-api:6443'
+])
+```
+
+### 5. Python 库项目 Jenkinsfile
+
+```groovy
+@Library('jenkins-pipeline-libraries') _
+
+PythonLibraryPipeline([
+        robotId    : 'your-dingtalk-robot-id',
+        svcName    : 'python-common-utils',
+        version    : '1.0.0',
+        nexusUrl   : 'http://your-nexus:8081'
+])
+```
+
+### 6. C++ 库项目 Jenkinsfile
 
 ```groovy
 @Library('jenkins-pipeline-libraries') _
@@ -584,7 +687,7 @@ CXXLibraryPipeline([
 ])
 ```
 
-### 5. 多技术栈统一流水线
+### 7. 多技术栈统一流水线
 
 ```groovy
 @Library('jenkins-pipeline-libraries') _
@@ -595,7 +698,7 @@ pipeline {
     parameters {
         string(name: 'SERVICE_NAME', defaultValue: 'my-service', description: '服务名称')
         string(name: 'VERSION', defaultValue: '1.0.0', description: '版本号')
-        choice(name: 'PIPELINE_TYPE', choices: ['maven', 'vue3', 'golang', 'cxx'], description: '流水线类型')
+        choice(name: 'PIPELINE_TYPE', choices: ['maven', 'vue3', 'golang', 'python', 'python-lib', 'cxx'], description: '流水线类型')
     }
 
     stages {
@@ -621,6 +724,18 @@ pipeline {
                             break
                         case 'golang':
                             GolangMicroSvcPipeline(commonConfig + [
+                                    svcName: params.SERVICE_NAME,
+                                    version: params.VERSION
+                            ])
+                            break
+                        case 'python':
+                            PythonMicroSvcPipeline(commonConfig + [
+                                    svcName: params.SERVICE_NAME,
+                                    version: params.VERSION
+                            ])
+                            break
+                        case 'python-lib':
+                            PythonLibraryPipeline(commonConfig + [
                                     svcName: params.SERVICE_NAME,
                                     version: params.VERSION
                             ])

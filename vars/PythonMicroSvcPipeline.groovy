@@ -5,7 +5,9 @@ import xyz.dev.ops.notify.DingTalk
  * Python 微服务通用流水线（vars）
  *
  * 功能：
+ *  - Python 构建与测试（支持 pip/uv 依赖管理）
  *  - SonarQube 代码扫描
+ *  - PyInstaller 打包（可选）
  *  - Docker 多架构镜像构建与推送（buildx 或传统构建）
  *  - Kubernetes 发布（使用 Config File Provider 模板渲染）
  *
@@ -18,8 +20,8 @@ def call(Map<String, Object> config) {
     /**
      * 入参（config）：
      *  robotId                 钉钉机器人ID（可选，用于通知）
-     *  baseImage               基础镜像（可选，默认 alpine:latest）
-     *  buildImage              构建镜像（可选，默认 golang:1.25）
+     *  baseImage               基础镜像（可选，默认 python:3.12-alpine）
+     *  buildImage              构建镜像（可选，默认 xin8/devops/python:latest）
      *  svcName                 服务名（必填，作为镜像与部署名）
      *  version                 大版本号（可选，默认 1.0.0；最终版本包含 git commit）
      *  sqServerUrl             SonarQube 内网地址（可选）

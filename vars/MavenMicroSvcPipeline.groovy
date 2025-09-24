@@ -6,7 +6,7 @@ import xyz.dev.ops.notify.DingTalk
  * Maven 微服务通用流水线（vars）
  *
  * 功能：
- *  - Maven 构建与 Sonar 扫描
+ *  - Maven 构建与 SonarQube 扫描
  *  - Docker 多架构镜像构建与推送
  *  - Kubernetes 发布（模板渲染）
  *
