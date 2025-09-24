@@ -200,7 +200,7 @@ def call(Map<String, Object> config) {
                                     -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.typescript.file.suffixes=.ts,.tsx \
                                     -Dsonar.javascript.lcov.reportPaths=reports/lcov.info \
-                                    -Dsonar.testExecutionReportPaths=reports/junit.xml
+                                    -Dsonar.junit.reportPaths=reports/junit.xml
                             """
                         }
                     }
