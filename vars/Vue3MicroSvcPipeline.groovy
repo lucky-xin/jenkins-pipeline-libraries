@@ -109,6 +109,23 @@ def call(Map<String, Object> config) {
                         npm install
                         
                         npm run build
+                        
+                        # 运行单元测试并生成覆盖率 (lcov/html)
+                        npm run test:coverage --silent
+
+                        # 生成 reports 目录，并复制/汇总报告
+                        mkdir -p reports
+                        # 拷贝覆盖率报告
+                        test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info || true
+                        # 拷贝 html 覆盖率报告
+                        if [ -d coverage/html ]; then
+                          rm -rf reports/html && mkdir -p reports/html
+                          cp -r coverage/html/* reports/html/
+                        fi
+
+                        # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
+                        # 若 vitest 版本支持 junit reporter，则以下命令会输出 JUnit XML
+                        npx vitest --run --reporter=junit --outputFile reports/junit.xml || true
     
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                     """
@@ -156,26 +173,14 @@ def call(Map<String, Object> config) {
                                     -Dsonar.sources=${params.sourceDir} \
                                     -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js,**/coverage/**,**/.nyc_output/** \
                                     -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
-                                    -Dsonar.typescript.file.suffixes=.ts,.tsx
+                                    -Dsonar.typescript.file.suffixes=.ts,.tsx \
+                                    -Dsonar.javascript.lcov.reportPaths=reports/lcov.info \
+                                    -Dsonar.testExecutionReportPaths=reports/junit.xml
                             """
                         }
                     }
                 }
                 post {
-                    always {
-                        // 归档报告
-                        script {
-                            if (fileExists("coverage/lcov.info")) {
-                                archiveArtifacts artifacts: "coverage/lcov.info", fingerprint: true
-                            }
-                            if (fileExists("coverage/test-results.xml")) {
-                                archiveArtifacts artifacts: "coverage/test-results.xml", fingerprint: true
-                            }
-                            if (fileExists("coverage/html")) {
-                                archiveArtifacts artifacts: "coverage/html/**/*", fingerprint: true
-                            }
-                        }
-                    }
                     success {
                         // 发布HTML覆盖率报告
                         script {
@@ -278,9 +283,9 @@ def call(Map<String, Object> config) {
             }
         } //stages
 
-        post {
-            always { cleanWs() }
-        }
+//        post {
+//            always { cleanWs() }
+//        }
     } //pipeline
 }
 
