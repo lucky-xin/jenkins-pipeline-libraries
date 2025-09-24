@@ -106,7 +106,17 @@ def call(Map<String, Object> config) {
                         npm config set cache /root/.npm
                         npm config set prefer-offline true
     
-                        npm install
+                        # 优先使用国内镜像源安装，若出现 ETARGET（镜像缺版本）则回退官方源重试
+                        set +e
+                        npm install --no-audit --no-fund
+                        INSTALL_RC=$?
+                        set -e
+                        if [ \$INSTALL_RC -ne 0 ]; then
+                          echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
+                          npm config set registry https://registry.npmjs.org
+                          npm cache clean --force || true
+                          npm install --no-audit --no-fund
+                        fi
                         
                         npm run build
                         
@@ -115,6 +125,7 @@ def call(Map<String, Object> config) {
 
                         # 生成 reports 目录，并复制/汇总报告
                         mkdir -p reports
+                        
                         # 拷贝覆盖率报告
                         test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info || true
                         # 拷贝 html 覆盖率报告
