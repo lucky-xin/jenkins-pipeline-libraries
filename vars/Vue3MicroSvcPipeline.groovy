@@ -145,7 +145,10 @@ def call(Map<String, Object> config) {
                             test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                         """
 
-                        def res = ExecutionsReportAdapter.convert("reports/test-results.json", "reports/test-results.xml")
+                        def res = ExecutionsReportAdapter.convert(
+                                "${WORKSPACE}/reports/test-results.json",
+                                "${WORKSPACE}/reports/test-results.xml"
+                        )
                         sh """
                             echo "total=${res.total}"
 

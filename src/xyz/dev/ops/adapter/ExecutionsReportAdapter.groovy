@@ -11,16 +11,16 @@ class ExecutionsReportAdapter {
     /**
      * 将 JSON（test-results.json）转换为 testExecutions XML。
      *
-     * @param lcovFilePath 输入文件路径（此参数名沿用接口约定，实际为 test-results.json 路径）
+     * @param jsonPath 输入文件路径（此参数名沿用接口约定，实际为 test-results.json 路径）
      * @param outputXmlPath 输出 testExecutions XML 路径
      */
-    static def convert(String lcovFilePath, String outputXmlPath) {
-        if (!lcovFilePath) {
+    static def convert(String jsonPath, String outputXmlPath) {
+        if (!jsonPath) {
             throw new IllegalArgumentException("test-results.json 路径不能为空")
         }
-        def inputFile = new File(lcovFilePath)
+        def inputFile = new File(jsonPath)
         if (!inputFile.exists()) {
-            throw new IllegalArgumentException("找不到 test-results.json 文件: ${lcovFilePath}")
+            throw new IllegalArgumentException("找不到 test-results.json 文件: ${jsonPath}")
         }
 
         def json = new JsonSlurper().parse(inputFile)
