@@ -131,7 +131,7 @@ def call(Map<String, Object> config) {
                             mkdir -p reports
                             
                             # 拷贝覆盖率报告
-                            test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info || true
+                            test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info
                             # 拷贝 html 覆盖率报告
                             if [ -d coverage/html ]; then
                             rm -rf reports/html && mkdir -p reports/html
@@ -140,12 +140,18 @@ def call(Map<String, Object> config) {
 
                             # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
                             # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
-                            npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json || true
+                            npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json
         
                             test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                         """
-                        
-                        ExecutionsReportAdapter.convert("reports/test-results.json", "reports/test-results.xml")
+
+                        def res = ExecutionsReportAdapter.convert("reports/test-results.json", "reports/test-results.xml")
+                        sh """
+                            echo "total=${res.total}"
+
+                            echo "ls -la reports"
+                            ls -la reports     
+                        """
                     }
                 }
                 post {
@@ -250,7 +256,6 @@ def call(Map<String, Object> config) {
                           
                             docker buildx build \
                               -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
-                              --no-cache \
                               --platform linux/amd64,linux/arm64/v8 \
                               --push \
                               .
