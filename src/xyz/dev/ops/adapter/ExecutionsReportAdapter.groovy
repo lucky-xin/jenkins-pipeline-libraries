@@ -1,10 +1,10 @@
 package xyz.dev.ops.adapter
 
 import groovy.json.JsonSlurper
-import xyz.dev.ops.adapter.SonarQubeJUnitXmlReportUtils
 
 /**
  * 将 Vitest/Jest 的 test-results.json 转换为 SonarQube Generic Test Executions XML 报告
+ * https://docs.sonarsource.com/sonarqube-server/2025.4/analyzing-source-code/test-coverage/generic-test-data
  */
 class ExecutionsReportAdapter {
 
@@ -40,7 +40,9 @@ class ExecutionsReportAdapter {
                 try {
                     def dur = (ar?.duration ?: 0) as BigDecimal
                     seconds = dur.divide(new BigDecimal(1000))
-                } catch (Throwable ignored) { seconds = 0.0 }
+                } catch (Throwable ignored) {
+                    seconds = 0.0
+                }
 
                 String status = (ar?.status ?: '').toString()
                 boolean isFailed = status?.toLowerCase() == 'failed' || ((ar?.failureMessages instanceof List) && ar.failureMessages.size() > 0)
@@ -58,7 +60,7 @@ class ExecutionsReportAdapter {
             }
         }
 
-        def data = [ testcases: testcases ]
+        def data = [testcases: testcases]
         SonarQubeJUnitXmlReportUtils.createExecutionsXmlReport(data, outputXmlPath)
 
         return [total: testcases.size(), err: '']

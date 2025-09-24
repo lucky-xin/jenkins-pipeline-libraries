@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="test/App.test.ts">
+    <testCase name="App renders correctly" duration="2088" status="PASSED"/>
+    <testCase name="App uses correct prefixCls for AppProvider" duration="125" status="PASSED"/>
+  </file>
+  <file path="test/AppProvider.test.ts">
+    <testCase name="AppProvider renders correctly with default prefixCls" duration="29" status="PASSED"/>
+    <testCase name="AppProvider renders correctly with custom prefixCls" duration="3" status="PASSED"/>
+    <testCase name="AppProvider provides context to child components" duration="5" status="PASSED"/>
+  </file>
+  <file path="test/useBreakpoint.test.ts">
+    <testCase name="useBreakpoint should define screenMap correctly" duration="1" status="PASSED"/>
+    <testCase name="useBreakpoint should create breakpoint listener" duration="2" status="PASSED"/>
+    <testCase name="useBreakpoint should return correct screen size for different widths" duration="1" status="PASSED"/>
+  </file>
+  <file path="test/useContext.test.ts">
+    <testCase name="useContext creates context and provides it correctly" duration="4" status="PASSED"/>
+    <testCase name="useContext creates context with readonly option" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/useEventListener.test.ts">
+    <testCase name="useEventListener should add event listener to element" duration="3" status="PASSED"/>
+    <testCase name="useEventListener should remove event listener when removeEvent is called" duration="0" status="PASSED"/>
+    <testCase name="useEventListener should use window as default element" duration="0" status="PASSED"/>
+    <testCase name="useEventListener should work with ref element" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/api/device.test.ts">
+    <testCase name="Device API should call getDeviceById with correct parameters" duration="3" status="PASSED"/>
+    <testCase name="Device API should call getDeviceInfoById with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Device API should call saveDevice with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Device API should call saveDevice with access token when provided" duration="0" status="PASSED"/>
+    <testCase name="Device API should call deleteDevice with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Device API should call getDeviceTypes" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/api/login.test.ts">
+    <testCase name="Login API should call login API with correct parameters" duration="4" status="PASSED"/>
+    <testCase name="Login API should call user info API" duration="0" status="PASSED"/>
+    <testCase name="Login API should call refresh token API with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Login API should call logout API" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/api/telemetry.test.ts">
+    <testCase name="Telemetry API should call getAttributeKeys with correct parameters" duration="3" status="PASSED"/>
+    <testCase name="Telemetry API should call getAttributeKeysByScope with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Telemetry API should call getTimeseries with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Telemetry API should call saveDeviceAttributes with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="Telemetry API should call deleteDeviceAttributes with correct parameters" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/api/user.test.ts">
+    <testCase name="User API should call getUserById with correct parameters" duration="3" status="PASSED"/>
+    <testCase name="User API should call saveUser with correct parameters" duration="1" status="PASSED"/>
+    <testCase name="User API should call userList with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="User API should call deleteUser with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="User API should call getTenantAdmins with correct parameters" duration="0" status="PASSED"/>
+    <testCase name="User API should call getCustomerUsers with correct parameters" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/components/Button.test.ts">
+    <testCase name="Button should render Button correctly" duration="28" status="PASSED"/>
+    <testCase name="Button should emit click event when clicked" duration="6" status="PASSED"/>
+    <testCase name="Button should be disabled when disabled prop is true" duration="3" status="PASSED"/>
+    <testCase name="Button should show loading state when loading prop is true" duration="7" status="PASSED"/>
+    <testCase name="Button should apply correct type class" duration="3" status="PASSED"/>
+  </file>
+  <file path="test/components/Copyright.test.ts">
+    <testCase name="Copyright should render with default props" duration="19" status="PASSED"/>
+    <testCase name="Copyright should render with custom company name" duration="2" status="PASSED"/>
+    <testCase name="Copyright should render with custom date" duration="2" status="PASSED"/>
+    <testCase name="Copyright should render with ICP number" duration="2" status="PASSED"/>
+    <testCase name="Copyright should render with company site link" duration="9" status="PASSED"/>
+    <testCase name="Copyright should render with ICP link" duration="2" status="PASSED"/>
+  </file>
+  <file path="test/components/CountDown.test.ts">
+    <testCase name="CountButton should render with default props" duration="24" status="PASSED"/>
+    <testCase name="CountButton should render with custom count" duration="2" status="PASSED"/>
+    <testCase name="CountButton should start countdown when clicked" duration="9" status="PASSED"/>
+    <testCase name="CountButton should disable button during countdown" duration="3" status="PASSED"/>
+    <testCase name="CountButton should call beforeStartFunc if provided" duration="3" status="PASSED"/>
+    <testCase name="CountButton should not start countdown if beforeStartFunc returns false" duration="3" status="PASSED"/>
+    <testCase name="CountButton should reset countdown when value changes" duration="3" status="PASSED"/>
+  </file>
+  <file path="test/components/CountTo.test.ts">
+    <testCase name="CountTo should render with default props" duration="42" status="PASSED"/>
+    <testCase name="CountTo should render with custom start and end values" duration="2" status="PASSED"/>
+    <testCase name="CountTo should render with custom duration" duration="2" status="PASSED"/>
+    <testCase name="CountTo should render with prefix and suffix" duration="2" status="PASSED"/>
+    <testCase name="CountTo should render with custom color" duration="13" status="PASSED"/>
+    <testCase name="CountTo should emit onStarted event" duration="2" status="PASSED"/>
+    <testCase name="CountTo should emit onFinished event" duration="202" status="PASSED"/>
+    <testCase name="CountTo should format number with decimals" duration="1" status="PASSED"/>
+    <testCase name="CountTo should format number with separator" duration="2" status="PASSED"/>
+    <testCase name="CountTo should start counting when start method is called" duration="1" status="PASSED"/>
+    <testCase name="CountTo should reset counting when reset method is called" duration="1" status="PASSED"/>
+  </file>
+  <file path="test/components/Description.test.ts">
+    <testCase name="Description should render with default props" duration="127" status="PASSED"/>
+    <testCase name="Description should render with title" duration="18" status="PASSED"/>
+    <testCase name="Description should render with schema" duration="14" status="PASSED"/>
+    <testCase name="Description should render with different sizes" duration="20" status="PASSED"/>
+    <testCase name="Description should render bordered description" duration="6" status="PASSED"/>
+    <testCase name="Description should render without border" duration="5" status="PASSED"/>
+    <testCase name="Description should render with collapse options" duration="6" status="PASSED"/>
+    <testCase name="Description should render with custom column configuration" duration="6" status="PASSED"/>
+  </file>
+  <file path="test/components/Form.test.ts">
+    <testCase name="Form should render BasicForm correctly" duration="131" status="PASSED"/>
+    <testCase name="Form should render form items based on schemas" duration="87" status="PASSED"/>
+    <testCase name="Form should handle form submission" duration="9" status="PASSED"/>
+    <testCase name="Form should show reset button when showResetButton is true" duration="43" status="PASSED"/>
+    <testCase name="Form should show submit button when showSubmitButton is true" duration="39" status="PASSED"/>
+  </file>
+  <file path="test/components/Icon.test.ts">
+    <testCase name="Icon should render icon with default props" duration="22" status="PASSED"/>
+    <testCase name="Icon should render icon with custom size" duration="3" status="PASSED"/>
+    <testCase name="Icon should render icon with custom color" duration="11" status="PASSED"/>
+    <testCase name="Icon should render spinning icon" duration="2" status="PASSED"/>
+    <testCase name="Icon should render image icon when icon contains dot" duration="6" status="PASSED"/>
+  </file>
+  <file path="test/components/Modal.test.ts">
+    <testCase name="Modal should render BasicModal" duration="160" status="PASSED"/>
+  </file>
+  <file path="test/components/Qrcode.test.ts">
+    <testCase name="Qrcode should render with default props" duration="17" status="PASSED"/>
+    <testCase name="Qrcode should render with custom value" duration="2" status="PASSED"/>
+    <testCase name="Qrcode should render with custom width" duration="2" status="PASSED"/>
+    <testCase name="Qrcode should render canvas by default" duration="2" status="PASSED"/>
+    <testCase name="Qrcode should render img tag when tag prop is img" duration="2" status="PASSED"/>
+    <testCase name="Qrcode should render with logo" duration="1" status="PASSED"/>
+    <testCase name="Qrcode should render with custom options" duration="1" status="PASSED"/>
+  </file>
+  <file path="test/components/Table.test.ts">
+    <testCase name="Table should render BasicTable correctly" duration="345" status="PASSED"/>
+    <testCase name="Table should render table with data" duration="81" status="PASSED"/>
+    <testCase name="Table should handle row selection" duration="87" status="PASSED"/>
+    <testCase name="Table should show pagination when pagination is enabled" duration="70" status="PASSED"/>
+    <testCase name="Table should emit row click event" duration="94" status="PASSED"/>
+  </file>
+  <file path="test/hooks/onMountedOrActivated.test.ts">
+    <testCase name="hooks/onMountedOrActivated onMountedOrActivated should register hooks correctly" duration="2" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useAppInject.test.ts">
+    <testCase name="hooks/useAppInject useAppInject should return isMobile computed property" duration="2" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useAttrs.test.ts">
+    <testCase name="hooks/useAttrs useAttrs should return empty object when no instance" duration="2" status="PASSED"/>
+    <testCase name="hooks/useAttrs entries should convert object to entries" duration="0" status="PASSED"/>
+    <testCase name="hooks/useAttrs entries should handle empty object" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useContext.test.ts">
+    <testCase name="useContext should create context object" duration="3" status="PASSED"/>
+    <testCase name="useContext should create readonly context when readonly option is true" duration="0" status="PASSED"/>
+    <testCase name="useContext should create mutable context when readonly option is false" duration="0" status="PASSED"/>
+    <testCase name="useContext should handle native context option" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useCopyToClipboard.test.ts">
+    <testCase name="useCopyToClipboard should create clipboard ref with initial value" duration="15" status="PASSED"/>
+    <testCase name="useCopyToClipboard should create clipboard ref without initial value" duration="0" status="PASSED"/>
+    <testCase name="useCopyToClipboard should update clipboard ref and trigger copy" duration="4" status="PASSED"/>
+    <testCase name="useCopyToClipboard should handle copy failure" duration="1" status="PASSED"/>
+    <testCase name="useCopyToClipboard should handle copy with custom target" duration="35" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useDesign.test.ts">
+    <testCase name="hooks/useDesign useDesign should return design properties" duration="1" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useFullContent.test.ts">
+    <testCase name="hooks/useFullContent useFullContent should return full content computed property" duration="6" status="PASSED"/>
+    <testCase name="hooks/useFullContent useFullContent should return true when project config fullContent is true" duration="3" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useIntersectionObserver.test.ts">
+    <testCase name="hooks/useIntersectionObserver useIntersectionObserver should create intersection observer" duration="6" status="PASSED"/>
+    <testCase name="hooks/useIntersectionObserver useIntersectionObserver should handle null target" duration="0" status="PASSED"/>
+    <testCase name="hooks/useIntersectionObserver useIntersectionObserver should disconnect observer on stop" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useLockFn.test.ts">
+    <testCase name="hooks/useLockFn useLockFn should lock function execution" duration="2" status="PASSED"/>
+    <testCase name="hooks/useLockFn useLockFn should unlock function after execution" duration="0" status="PASSED"/>
+    <testCase name="hooks/useLockFn useLockFn should handle function errors and unlock" duration="2" status="PASSED"/>
+  </file>
+  <file path="test/hooks/usePagination.test.ts">
+    <testCase name="usePagination should create pagination with correct initial state" duration="3" status="PASSED"/>
+    <testCase name="usePagination should paginate correctly with first page" duration="0" status="PASSED"/>
+    <testCase name="usePagination should paginate correctly with second page" duration="0" status="PASSED"/>
+    <testCase name="usePagination should paginate correctly with last page" duration="0" status="PASSED"/>
+    <testCase name="usePagination should handle empty list" duration="0" status="PASSED"/>
+    <testCase name="usePagination should handle list smaller than page size" duration="0" status="PASSED"/>
+    <testCase name="usePagination should change page size" duration="0" status="PASSED"/>
+    <testCase name="usePagination should handle page size larger than list" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/usePermission.test.ts">
+    <testCase name="hooks/usePermission usePermission should return permission functions" duration="2" status="PASSED"/>
+    <testCase name="hooks/usePermission usePermission should check permissions correctly" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useRefs.test.ts">
+    <testCase name="hooks/useRefs useRefs should create refs and setRefs function" duration="2" status="PASSED"/>
+    <testCase name="hooks/useRefs useRefs should set refs correctly" duration="0" status="PASSED"/>
+    <testCase name="hooks/useRefs useRefs should clear refs on before update" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useScript.test.ts">
+    <testCase name="useScript should create script with correct initial state" duration="3" status="PASSED"/>
+    <testCase name="useScript should create promise that can be called" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useScroll.test.ts">
+    <testCase name="hooks/useScroll useScroll should create scroll refs and handler" duration="2" status="PASSED"/>
+    <testCase name="hooks/useScroll useScroll should handle window element" duration="0" status="PASSED"/>
+    <testCase name="hooks/useScroll useScroll should handle null element" duration="0" status="PASSED"/>
+    <testCase name="hooks/useScroll useScroll should use throttle function with options" duration="24" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useScrollTo.test.ts">
+    <testCase name="hooks/useScrollTo useScrollTo should create scroll animation functions" duration="2" status="PASSED"/>
+    <testCase name="hooks/useScrollTo useScrollTo should handle custom duration" duration="0" status="PASSED"/>
+    <testCase name="hooks/useScrollTo useScrollTo should handle callback function" duration="0" status="PASSED"/>
+    <testCase name="hooks/useScrollTo useScrollTo should calculate easing correctly" duration="1" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useTimeout.test.ts">
+    <testCase name="hooks/useTimeout useTimeoutFn should throw error for non-function handle" duration="2" status="PASSED"/>
+    <testCase name="hooks/useTimeout useTimeoutFn should execute handle after timeout with native option" duration="2" status="PASSED"/>
+    <testCase name="hooks/useTimeout useTimeoutFn should execute handle after timeout without native option" duration="3" status="PASSED"/>
+    <testCase name="hooks/useTimeout useTimeoutRef should set readyRef to true after timeout" duration="1" status="PASSED"/>
+    <testCase name="hooks/useTimeout useTimeoutRef should stop timeout" duration="0" status="PASSED"/>
+    <testCase name="hooks/useTimeout useTimeoutRef should restart timeout" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useTitle.test.ts">
+    <testCase name="hooks/useTitle useTitle should set up title watching" duration="3" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useWatermark.test.ts">
+    <testCase name="useWatermark should create watermark functions" duration="6" status="PASSED"/>
+    <testCase name="useWatermark should create watermark with default options" duration="46" status="PASSED"/>
+    <testCase name="useWatermark should create watermark with custom options" duration="15" status="PASSED"/>
+    <testCase name="useWatermark should clear watermark" duration="18" status="PASSED"/>
+    <testCase name="useWatermark should clear all watermarks" duration="34" status="PASSED"/>
+  </file>
+  <file path="test/hooks/useWindowSizeFn.test.ts">
+    <testCase name="hooks/useWindowSizeFn useWindowSizeFn should create start and stop functions" duration="2" status="PASSED"/>
+    <testCase name="hooks/useWindowSizeFn useWindowSizeFn should handle custom wait time" duration="0" status="PASSED"/>
+    <testCase name="hooks/useWindowSizeFn useWindowSizeFn should handle options" duration="0" status="PASSED"/>
+    <testCase name="hooks/useWindowSizeFn useWindowSizeFn should add and remove event listener" duration="3" status="PASSED"/>
+  </file>
+  <file path="test/store/index.test.ts">
+    <testCase name="store/index setupStore should setup store correctly" duration="2" status="PASSED"/>
+    <testCase name="store/index store should create pinia store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/auth.test.ts">
+    <testCase name="utils/auth getToken should get token from auth cache" duration="3" status="PASSED"/>
+    <testCase name="utils/auth getRefreshToken should get refresh token from auth cache" duration="0" status="PASSED"/>
+    <testCase name="utils/auth getAuthCache should get value from session storage when permissionCacheType is SESSION" duration="0" status="PASSED"/>
+    <testCase name="utils/auth setAuthCache should set value in session storage when permissionCacheType is SESSION" duration="0" status="PASSED"/>
+    <testCase name="utils/auth clearAuthCache should clear session cache when permissionCacheType is SESSION" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/cache.test.ts">
+    <testCase name="utils/cache createStorage should create storage with default options" duration="1" status="PASSED"/>
+    <testCase name="utils/cache createStorage should create storage with custom storage" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createStorage should set and get values" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createStorage should return default value for non-existent keys" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createStorage should remove values" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createStorage should clear all values" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createSessionStorage should create session storage with default timeout" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createSessionStorage should set and get values with session storage" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createLocalStorage should create local storage with default timeout" duration="0" status="PASSED"/>
+    <testCase name="utils/cache createLocalStorage should set and get values with local storage" duration="0" status="PASSED"/>
+    <testCase name="utils/cache WebStorage should create WebStorage instance" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/checkStatus.test.ts">
+    <testCase name="utils/http/axios/checkStatus should emit message for common error status" duration="7" status="PASSED"/>
+    <testCase name="utils/http/axios/checkStatus should show modal when mode is modal" duration="0" status="PASSED"/>
+    <testCase name="utils/http/axios/checkStatus should handle 401 with logout by default" duration="1" status="PASSED"/>
+    <testCase name="utils/http/axios/checkStatus should pass through custom message for 400" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/cipher.test.ts">
+    <testCase name="utils/cipher AesEncryption should create an instance with default options" duration="1" status="PASSED"/>
+    <testCase name="utils/cipher AesEncryption should create an instance with custom key and iv" duration="0" status="PASSED"/>
+    <testCase name="utils/cipher AesEncryption should encrypt and decrypt text correctly" duration="2" status="PASSED"/>
+    <testCase name="utils/cipher AesEncryption should have correct options" duration="0" status="PASSED"/>
+    <testCase name="utils/cipher Base64 functions should encrypt and decrypt by Base64 correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/cipher MD5 function should encrypt by MD5 correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/cipher MD5 function should produce consistent MD5 hashes" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/color.test.ts">
+    <testCase name="utils/color isHexColor should validate hex colors correctly" duration="2" status="PASSED"/>
+    <testCase name="utils/color rgbToHex should convert RGB to hex correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/color hexToRGB should convert hex to RGB correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/color hexToRGB should return original string for invalid hex colors" duration="0" status="PASSED"/>
+    <testCase name="utils/color colorIsDark should determine if color is dark correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/color colorIsDark should return undefined for invalid hex colors" duration="0" status="PASSED"/>
+    <testCase name="utils/color darken should darken colors correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/color lighten should lighten colors correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/color calculateBestTextColor should calculate best text color correctly" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/dateUtil.test.ts">
+    <testCase name="utils/dateUtil formatToDateTime should format date to datetime string correctly" duration="2" status="PASSED"/>
+    <testCase name="utils/dateUtil formatToDateTime should return undefined for undefined date" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil formatToDateTime should format date with custom format" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil formatToDate should format date to date string correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil formatToDate should return undefined for undefined date" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil formatToDate should format date with custom format" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil dateUtil should be dayjs instance" duration="0" status="PASSED"/>
+    <testCase name="utils/dateUtil dateUtil should work like dayjs" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/domUtils.test.ts">
+    <testCase name="utils/domUtils getBoundingClientRect should return 0 for invalid element" duration="1" status="PASSED"/>
+    <testCase name="utils/domUtils getBoundingClientRect should return bounding rect for valid element" duration="1" status="PASSED"/>
+    <testCase name="utils/domUtils hasClass should return false for invalid element or class" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils hasClass should throw error for class with space" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils hasClass should check class with classList" duration="1" status="PASSED"/>
+    <testCase name="utils/domUtils addClass should not add class for invalid element" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils addClass should add class with classList" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils removeClass should not remove class for invalid element or class" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils removeClass should remove class with classList" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils hackCss should generate css with prefixes" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils event handlers should add event listener" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils event handlers should remove event listener" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils event handlers should add and remove event listener once" duration="0" status="PASSED"/>
+    <testCase name="utils/domUtils useRafThrottle should throttle function with requestAnimationFrame" duration="2" status="PASSED"/>
+  </file>
+  <file path="test/utils/env.test.ts">
+    <testCase name="utils/env constants should have correct mode constants" duration="1" status="PASSED"/>
+    <testCase name="utils/env getEnv should return environment mode" duration="0" status="PASSED"/>
+    <testCase name="utils/env mode check functions should check if dev mode" duration="0" status="PASSED"/>
+    <testCase name="utils/env mode check functions should check if prod mode" duration="0" status="PASSED"/>
+    <testCase name="utils/env publicPath should return correct public path" duration="0" status="PASSED"/>
+    <testCase name="utils/env storage functions should generate common storage prefix" duration="0" status="PASSED"/>
+    <testCase name="utils/env storage functions should generate storage short name" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/event.test.ts">
+    <testCase name="utils/event addResizeListener should not add listener on server side" duration="1" status="PASSED"/>
+    <testCase name="utils/event addResizeListener should add resize listener to element" duration="0" status="PASSED"/>
+    <testCase name="utils/event addResizeListener should add multiple listeners to the same element" duration="0" status="PASSED"/>
+    <testCase name="utils/event removeResizeListener should not remove listener when element is null" duration="1" status="PASSED"/>
+    <testCase name="utils/event removeResizeListener should not remove listener when element has no listeners" duration="1" status="PASSED"/>
+    <testCase name="utils/event removeResizeListener should remove listener from element" duration="0" status="PASSED"/>
+    <testCase name="utils/event removeResizeListener should disconnect observer when no listeners remain" duration="0" status="PASSED"/>
+    <testCase name="utils/event removeResizeListener should not disconnect observer when listeners remain" duration="0" status="PASSED"/>
+    <testCase name="utils/event triggerResize should trigger resize event" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/file.test.ts">
+    <testCase name="utils/file base64Conver dataURLtoBlob should convert base64 to blob" duration="2" status="PASSED"/>
+    <testCase name="utils/file base64Conver urlToBase64 should convert url to base64" duration="0" status="PASSED"/>
+    <testCase name="utils/file download downloadByData should download data as blob" duration="0" status="PASSED"/>
+    <testCase name="utils/file download downloadByData should use msSaveBlob for IE" duration="1" status="PASSED"/>
+    <testCase name="utils/file download downloadByBase64 should download base64 data" duration="0" status="PASSED"/>
+    <testCase name="utils/file download downloadByUrl should download file by url" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/helper.test.ts">
+    <testCase name="utils/helper/treeHelper listToTree should convert list to tree structure" duration="3" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper listToTree should handle empty list" duration="1" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper listToTree should handle undefined list" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper listToTree should use custom configuration" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper treeToList should convert tree to flat list" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper treeToList should handle empty tree" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findNode should find a node that matches the condition" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findNode should return null when no node matches" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findNode should return the first matching node" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findNodeAll should find all nodes that match the condition" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findNodeAll should return empty array when no nodes match" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findPath should find the path to a node" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findPath should return null when no path is found" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findPathAll should find all paths to nodes that match" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper findPathAll should return empty array when no paths are found" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper filter should filter tree nodes" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper filter should return empty array when no nodes match" duration="0" status="PASSED"/>
+    <testCase name="utils/helper/treeHelper filter should use custom configuration" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/is.test.ts">
+    <testCase name="utils/is should check is correctly" duration="1" status="PASSED"/>
+    <testCase name="utils/is should check isDef correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isUnDef correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isObject correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isEmpty correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isDate correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isNull correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isNumber correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isString correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isFunction correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isBoolean correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isArray correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isServer and isClient correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/is should check isUrl correctly" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/jwt.test.ts">
+    <testCase name="utils/jwt decode should decode token correctly" duration="2" status="PASSED"/>
+    <testCase name="utils/jwt decode should return undefined for falsy token" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt getExpiration should return expiration date" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt getExpiration should return undefined for token without exp" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt isExpired should return true for expired token" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt isExpired should return false for valid token" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt isExpired should return true for falsy token" duration="0" status="PASSED"/>
+    <testCase name="utils/jwt isExpired should return true for token without exp" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/lib.test.ts">
+    <testCase name="utils/lib/echarts should export echarts instance" duration="1" status="PASSED"/>
+    <testCase name="utils/lib/echarts should have use method" duration="0" status="PASSED"/>
+    <testCase name="utils/lib/echarts should have common chart types" duration="0" status="PASSED"/>
+    <testCase name="utils/lib/echarts should have common components" duration="0" status="PASSED"/>
+    <testCase name="utils/lib/echarts should have renderer" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/memory.test.ts">
+    <testCase name="utils/cache/memory should set and get cache item with default alive" duration="3" status="PASSED"/>
+    <testCase name="utils/cache/memory should expire item by timer" duration="1" status="PASSED"/>
+    <testCase name="utils/cache/memory should support explicit expires timestamp (absolute)" duration="0" status="PASSED"/>
+    <testCase name="utils/cache/memory should clear previous timeout when resetting same key" duration="2" status="PASSED"/>
+    <testCase name="utils/cache/memory should remove item and return previous value" duration="0" status="PASSED"/>
+    <testCase name="utils/cache/memory should reset cache respecting remaining time" duration="1" status="PASSED"/>
+    <testCase name="utils/cache/memory should clear all items and timers" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/mitt.test.ts">
+    <testCase name="utils/mitt mitt should create an emitter instance" duration="2" status="PASSED"/>
+    <testCase name="utils/mitt mitt should register and emit events" duration="2" status="PASSED"/>
+    <testCase name="utils/mitt mitt should register wildcard events" duration="0" status="PASSED"/>
+    <testCase name="utils/mitt mitt should remove event handlers" duration="0" status="PASSED"/>
+    <testCase name="utils/mitt mitt should remove all event handlers of a type" duration="0" status="PASSED"/>
+    <testCase name="utils/mitt mitt should clear all events" duration="0" status="PASSED"/>
+    <testCase name="utils/mitt mitt should handle one-time events" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/propTypes.test.ts">
+    <testCase name="utils/propTypes should define propTypes" duration="21" status="PASSED"/>
+    <testCase name="utils/propTypes should have basic prop type validators" duration="1" status="PASSED"/>
+    <testCase name="utils/propTypes should validate string props correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/propTypes should validate number props correctly" duration="0" status="PASSED"/>
+    <testCase name="utils/propTypes should validate boolean props correctly" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/utils/uuid.test.ts">
+    <testCase name="utils/uuid should generate a UUID" duration="2" status="PASSED"/>
+    <testCase name="utils/uuid should generate different UUIDs" duration="0" status="PASSED"/>
+    <testCase name="utils/uuid should generate a short UUID" duration="0" status="PASSED"/>
+    <testCase name="utils/uuid should generate a short UUID with prefix" duration="0" status="PASSED"/>
+    <testCase name="utils/uuid should generate different short UUIDs" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/app.test.ts">
+    <testCase name="store/modules/app useAppStore should create app store" duration="3" status="PASSED"/>
+    <testCase name="store/modules/app useAppStore should have initial state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/app useAppStore should set page loading" duration="0" status="PASSED"/>
+    <testCase name="store/modules/app useAppStore should set dark mode" duration="1" status="PASSED"/>
+    <testCase name="store/modules/app useAppStore should set project config" duration="1" status="PASSED"/>
+    <testCase name="store/modules/app useAppStoreWithOut should return app store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/errorLog.test.ts">
+    <testCase name="store/modules/errorLog useErrorLogStore should create error log store" duration="3" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStore should have initial state" duration="33" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStore should add error log info" duration="2" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStore should set error log list count" duration="0" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStore should add ajax error info" duration="0" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStore should not add ajax error info when error handling is disabled" duration="1" status="PASSED"/>
+    <testCase name="store/modules/errorLog useErrorLogStoreWithOut should return error log store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/locale.test.ts">
+    <testCase name="store/modules/locale useLocaleStore should create locale store" duration="4" status="PASSED"/>
+    <testCase name="store/modules/locale useLocaleStore should have initial state" duration="1" status="PASSED"/>
+    <testCase name="store/modules/locale useLocaleStore should set locale info" duration="1" status="PASSED"/>
+    <testCase name="store/modules/locale useLocaleStore should init locale" duration="0" status="PASSED"/>
+    <testCase name="store/modules/locale useLocaleStoreWithOut should return locale store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/lock.test.ts">
+    <testCase name="store/modules/lock useLockStore should create lock store" duration="3" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should have initial state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should set lock info" duration="1" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should reset lock info" duration="0" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should unlock with correct password" duration="1" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should unlock with login credentials" duration="0" status="PASSED"/>
+    <testCase name="store/modules/lock useLockStore should fail to unlock with incorrect password" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/multipleTab.test.ts">
+    <testCase name="store/modules/multipleTab useMultipleTabStore should create multiple tab store" duration="3" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should have initial state" duration="1" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should update cache tab" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should clear cache tabs" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should reset state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should add tab" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should not add tab for ignored routes" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should close tab" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should sort tabs" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabStore should close all tabs" duration="0" status="PASSED"/>
+    <testCase name="store/modules/multipleTab useMultipleTabWithOutStore should return multiple tab store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/permission.test.ts">
+    <testCase name="store/modules/permission usePermissionStore should create permission store" duration="4" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should have initial state" duration="1" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should set back menu list" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should set front menu list" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should set last build menu time" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should set dynamic added route" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should reset state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should change permission code" duration="1" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should handle change permission code error" duration="6" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should build routes action" duration="1" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should build routes action with ROLE permission mode" duration="0" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStore should build routes action with BACK permission mode" duration="1" status="PASSED"/>
+    <testCase name="store/modules/permission usePermissionStoreWithOut should return permission store" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/user.test.ts">
+    <testCase name="store/modules/user useUserStore should create user store" duration="5" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should have initial state" duration="2" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should set token" duration="1" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should set session timeout" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should set user info" duration="1" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should set authority" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should reset state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should handle page cache" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should logout" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should login successfully" duration="1" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should get user info" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useUserStore should handle login failure" duration="1" status="PASSED"/>
+    <testCase name="store/modules/user useUserStoreWithOut should return user store" duration="0" status="PASSED"/>
+    <testCase name="store/modules/user useEmitter should return emitter" duration="0" status="PASSED"/>
+  </file>
+  <file path="test/store/modules/websocket.test.ts">
+    <testCase name="store/modules/websocket useWebsocketStore should create websocket store" duration="3" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should have initial state" duration="0" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should close websocket" duration="0" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should increment cmd id" duration="0" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should send data through websocket" duration="1" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should initialize websocket" duration="0" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should handle websocket message" duration="1" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStore should unsubscribe from websocket" duration="0" status="PASSED"/>
+    <testCase name="store/modules/websocket useWebsocketStoreWithOut should return websocket store" duration="0" status="PASSED"/>
+  </file>
+</testExecutions>

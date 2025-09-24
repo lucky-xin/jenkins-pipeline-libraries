@@ -88,26 +88,31 @@ class SonarQubeJUnitXmlReportUtils {
             fileGroups[fileName] << testcase
         }
 
-        // 为每个文件生成测试用例
+        // 为每个文件生成测试用例（严格匹配 target-test-execution.xml 结构）
         fileGroups.each { fileName, testCases ->
             xml.append("  <file path=\"${fileName}\">\n")
 
             testCases.each { testcase ->
                 def duration = (testcase.time * 1000) as int // 转换为毫秒
-                xml.append("    <testCase name=\"${testcase.name}\" duration=\"${duration}\"")
+                def hasFailure = testcase.failure
+                def hasError = testcase.error
+                def hasSkipped = testcase.skipped
 
-                // 添加状态信息
-                if (testcase.failure) {
-                    xml.append(" status=\"FAILED\"")
-                } else if (testcase.error) {
-                    xml.append(" status=\"ERROR\"")
-                } else if (testcase.skipped) {
-                    xml.append(" status=\"SKIPPED\"")
+                if (hasFailure || hasError || hasSkipped) {
+                    xml.append("    <testCase name=\"${testcase.name}\" duration=\"${duration}\">\n")
+                    if (hasSkipped) {
+                        xml.append("      <skipped/>\n")
+                    }
+                    if (hasFailure) {
+                        xml.append("      <failure/>\n")
+                    }
+                    if (hasError) {
+                        xml.append("      <error/>\n")
+                    }
+                    xml.append("    </testCase>\n")
                 } else {
-                    xml.append(" status=\"PASSED\"")
+                    xml.append("    <testCase name=\"${testcase.name}\" duration=\"${duration}\"/>\n")
                 }
-
-                xml.append("/>\n")
             }
 
             xml.append("  </file>\n")
