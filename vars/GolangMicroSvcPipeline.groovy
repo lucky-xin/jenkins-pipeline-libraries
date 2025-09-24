@@ -280,12 +280,11 @@ def call(Map<String, Object> config) {
                                            reason : "【${env.STAGE_NAME}】失败！"])
                         }
                     }
-                    always { cleanWs() }
                 }
             }
         } //stages
-//        post {
-//            always { cleanWs() }
-//        }
+        post {
+            always { cleanWs() }
+        }
     }
 }

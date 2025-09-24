@@ -26,18 +26,18 @@ def call(Map<String, Object> config) {
      *  sqDashboardUrl          SonarQube 外网地址（可选）
      */
     // 设置默认值
-    def params = [robotId         : config.robotId ?: '',
-                  baseImage       : config.baseImage ?: "python:3.12-alpine",
-                  buildImage      : config.buildImage ?: "xin8/devops/python:latest",
-                  sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
-                  sourceDir       : config.sourceDir ?: 'src', // 源码目录
-                  testDir         : config.testDir ?: 'test', // 单元测试目录
-                  svcName         : config.svcName ?: "",//微服务名称，规范【小写英文字母，数字，中划线'-'】
-                  version         : config.version ?: "1.0.0",//大版本号，最终的版本号为：大版本号-【Git Commot id】
-                  sqServerUrl     : config.sqServerUrl ?: "http://172.29.35.103:9000",//SonarQube内网地址
-                  sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
-                  nexusUrl        : config.nexusUrl ?: "http://172.29.35.103:8081",
-                  ]
+    def params = [robotId       : config.robotId ?: '',
+                  baseImage     : config.baseImage ?: "python:3.12-alpine",
+                  buildImage    : config.buildImage ?: "xin8/devops/python:latest",
+                  sqCliImage    : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
+                  sourceDir     : config.sourceDir ?: 'src', // 源码目录
+                  testDir       : config.testDir ?: 'test', // 单元测试目录
+                  svcName       : config.svcName ?: "",//微服务名称，规范【小写英文字母，数字，中划线'-'】
+                  version       : config.version ?: "1.0.0",//大版本号，最终的版本号为：大版本号-【Git Commot id】
+                  sqServerUrl   : config.sqServerUrl ?: "http://172.29.35.103:9000",//SonarQube内网地址
+                  sqDashboardUrl: config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
+                  nexusUrl      : config.nexusUrl ?: "http://172.29.35.103:8081",
+    ]
 
     def dingTalk = new DingTalk()
     def k8sDeployService = new K8sDeployService(this)
@@ -52,7 +52,8 @@ def call(Map<String, Object> config) {
             buildDiscarder(logRotator(numToKeepStr: '5'))
         }
         environment {
-            BUILD_ARGS = "-u root:root -v $HOME/.cache/pip/:/root/.cache/pip/ -v $HOME/.cache/uv/:/root/.cache/uv/"  //挂载 pip 依赖缓存
+            BUILD_ARGS = "-u root:root -v $HOME/.cache/pip/:/root/.cache/pip/ -v $HOME/.cache/uv/:/root/.cache/uv/"
+            //挂载 pip 依赖缓存
             SERVICE_NAME = "${params.svcName}"  //服务名称
             // 如果是pre分支则镜像版本为：'v' + 大版本号，如果是非pre分支则版本号为：大版本号 + '-' +【Git Commot id】
             VERSION = "${BRANCH_NAME == 'pre' ? 'v' + params.version : params.version + '-' + GIT_COMMIT.substring(0, 8)}"
@@ -240,8 +241,8 @@ def call(Map<String, Object> config) {
                 }
             }
         } //stages
-//        post {
-//            always { cleanWs() }
-//        }
+        post {
+            always { cleanWs() }
+        }
     }
 }
