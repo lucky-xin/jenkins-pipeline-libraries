@@ -119,7 +119,9 @@ def call(Map<String, Object> config) {
                                     HIDDEN_IMPORTS=\$(grep -E '^[A-Za-z0-9_.-]+' requirements.txt | sed -E 's/[<>=!].*\$//' | sed -E 's#^(.+)\$#--hidden-import=\\1 #' | tr -d '\\n')
                                 elif [ -f uv.lock ]; then
                                     # 使用 uv + uv.lock 安装
-                                    sed -i 's#@8.145.35.103#172.29.35.103#g' uv.lock
+                                    # 替换 uv.lock 中的外网地址为内网地址（支持多种格式）
+                                    sed -i -e 's#http://8\.145\.35\.103#http://172.29.35.103#g' uv.lock || echo "警告: uv.lock 地址替换失败，继续执行..."
+                                    
                                     export UV_INDEX_URL="\$INDEX_URL"
                                     export UV_EXTRA_INDEX_URL="\$INDEX_URL"
                                     # CI 环境需要完整依赖，包含所有分组与 extras
