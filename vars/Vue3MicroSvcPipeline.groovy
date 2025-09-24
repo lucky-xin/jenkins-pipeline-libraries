@@ -1,5 +1,6 @@
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
+import xyz.dev.ops.adapter.ExecutionsReportAdapter
 
 /**
  * Vue3 微服务前端通用流水线（vars）
@@ -97,49 +98,55 @@ def call(Map<String, Object> config) {
                 steps {
                     echo '开始使用 Node 构建前端...'
                     checkout scm
-                    sh label: "Node build in container", script: """
-                        set -eux
-                        # 设置 Node.js 内存限制，避免堆内存溢出
-                        export NODE_OPTIONS="--max-old-space-size=4096"
-                                
-                        npm config set registry https://registry.npmmirror.com
-                        npm config set cache /root/.npm
-                        npm config set prefer-offline true
-    
-                        # 优先使用国内镜像源安装，若出现 ETARGET（镜像缺版本）则回退官方源重试
-                        set +e
-                        npm install --no-audit --no-fund
-                        INSTALL_RC=\$?
-                        set -e
-                        if [ \$INSTALL_RC -ne 0 ]; then
-                          echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
-                          npm config set registry https://registry.npmjs.org
-                          npm cache clean --force || true
-                          npm install --no-audit --no-fund
-                        fi
-                        
-                        npm run build
-                        
-                        # 运行单元测试并生成覆盖率 (lcov/html)
-                        npm run test:coverage --silent
 
-                        # 生成 reports 目录，并复制/汇总报告
-                        mkdir -p reports
-                        
-                        # 拷贝覆盖率报告
-                        test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info || true
-                        # 拷贝 html 覆盖率报告
-                        if [ -d coverage/html ]; then
-                          rm -rf reports/html && mkdir -p reports/html
-                          cp -r coverage/html/* reports/html/
-                        fi
+                    script {
 
-                        # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
-                        # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
-                        npm exec -y vitest -- --run --reporter=junit --outputFile reports/junit.xml || true
-    
-                        test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
-                    """
+                        sh """
+                            set -eux
+                            # 设置 Node.js 内存限制，避免堆内存溢出
+                            export NODE_OPTIONS="--max-old-space-size=4096"
+                                    
+                            npm config set registry https://registry.npmmirror.com
+                            npm config set cache /root/.npm
+                            npm config set prefer-offline true
+        
+                            # 优先使用国内镜像源安装，若出现 ETARGET（镜像缺版本）则回退官方源重试
+                            set +e
+                            npm install --no-audit --no-fund
+                            INSTALL_RC=\$?
+                            set -e
+                            if [ \$INSTALL_RC -ne 0 ]; then
+                            echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
+                            npm config set registry https://registry.npmjs.org
+                            npm cache clean --force || true
+                            npm install --no-audit --no-fund
+                            fi
+                            
+                            npm run build
+                            
+                            # 运行单元测试并生成覆盖率 (lcov/html)
+                            npm run test:coverage --silent
+
+                            # 生成 reports 目录，并复制/汇总报告
+                            mkdir -p reports
+                            
+                            # 拷贝覆盖率报告
+                            test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info || true
+                            # 拷贝 html 覆盖率报告
+                            if [ -d coverage/html ]; then
+                            rm -rf reports/html && mkdir -p reports/html
+                            cp -r coverage/html/* reports/html/
+                            fi
+
+                            # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
+                            # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
+                            npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json || true
+        
+                            test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
+                        """
+                        
+                        ExecutionsReportAdapter.convert("reports/test-results.json", "reports/test-results.xml")
+                    }
                 }
                 post {
                     failure {
@@ -200,7 +207,7 @@ def call(Map<String, Object> config) {
                                     -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.typescript.file.suffixes=.ts,.tsx \
                                     -Dsonar.javascript.lcov.reportPaths=reports/lcov.info \
-                                    -Dsonar.junit.reportPaths=reports/junit.xml
+                                    -Dsonar.testExecutionReportPaths=reports/test-results.xml
                             """
                         }
                     }
