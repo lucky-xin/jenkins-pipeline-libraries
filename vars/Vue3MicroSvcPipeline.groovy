@@ -243,6 +243,7 @@ def call(Map<String, Object> config) {
                           
                             docker buildx build \
                               -t $DOCKER_REPOSITORY/$IMAGE_NAME:$VERSION \
+                              --no-cache \
                               --platform linux/amd64,linux/arm64/v8 \
                               --push \
                               .
