@@ -363,7 +363,7 @@ def call(Map<String, Object> config) {
                                 # 运行SonarQube扫描
                                 sonar-scanner \
                                     -Dsonar.host.url=${SQ_SERVER_URL} \
-                                    -Dsonar.token=${SONAR_TOKEN} \
+                                    -Dsonar.token=\$SONAR_TOKEN \
                                     -Dsonar.projectKey=${SERVICE_NAME} \
                                     -Dsonar.projectName=${SERVICE_NAME} \
                                     -Dsonar.projectVersion=${VERSION} \
@@ -585,7 +585,7 @@ def call(Map<String, Object> config) {
                             def uploadFile = { sourceFile, targetPath ->
                                 if (fileExists(sourceFile)) {
                                     sh """
-                                    curl -v -u \${NEXUS_USER}:\${NEXUS_PASS} \
+                                    curl -v -u \$NEXUS_USER:\$NEXUS_PASS \
                                         --upload-file ${sourceFile} \
                                         \${NEXUS_URL}/repository/\${NEXUS_RAW_REPO}/${versionPath}/${targetPath}
                                 """

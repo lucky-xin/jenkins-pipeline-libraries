@@ -33,7 +33,7 @@ def call(Map<String, Object> config) {
                   version         : config.version ?: "1.0.0",//大版本号，最终的版本号为：大版本号-【Git Commot id】
                   sqServerUrl     : config.sqServerUrl ?: "http://172.29.35.103:9000",//SonarQube内网地址
                   sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",//SonarQube外网地址，如果想在非公司网络看质量报告则配置SonarQube外网地址，否则该配置为内网地址
-                  nexusUrl        : config.nexusUrl ?: "http://172.29.35.103:8081/repository/python-hosted/simple",
+                  nexusUrl        : config.nexusUrl ?: "http://172.29.35.103:8081",
                   ]
 
     def dingTalk = new DingTalk()
@@ -85,8 +85,7 @@ def call(Map<String, Object> config) {
                                 # 配置 Nexus 私仓并安装依赖
                                 HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\\1#')
                                 SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\\1#')
-                                PATH_PART=\$(echo "$NEXUS_URL" | sed -E 's#^https?://[^/]+(.*)\$#\\1#')
-                                INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST\$PATH_PART"
+                                INDEX_URL="\$SCHEME://\$NEXUS_USER:\$NEXUS_PASS@\$HOST/repository/python-group/simple"
 
                                 mkdir -p /root/.pip reports
                                 printf "[global]\\nindex-url = %s\ntrusted-host = %s\n" "\$INDEX_URL" "\$HOST" > /root/.pip/pip.conf
@@ -94,8 +93,6 @@ def call(Map<String, Object> config) {
                                 if [ -f requirements.txt ]; then
                                     # 使用 pip + requirements.txt 安装
                                     pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" -r requirements.txt
-                                    # 确保测试所需依赖存在
-                                    pip install --timeout 60 --no-cache-dir --index-url "\$INDEX_URL" --trusted-host "\$HOST" pytest pytest-cov
                                     # 自动提取 requirements.txt 模块并作为 hidden-import（仅保留包名并前缀参数）
                                 elif [ -f uv.lock ]; then
                                     # 使用 uv + uv.lock 安装
@@ -207,8 +204,12 @@ def call(Map<String, Object> config) {
 
                             sh """
                                 # 打包产物
+                                SCHEME=\$(echo "$NEXUS_URL" | sed -E 's#^(https?)://.*#\\1#')
+                                HOST=\$(echo "$NEXUS_URL" | sed -E 's#^https?://([^/]+)/?.*\$#\\1#')
+                                INDEX_URL="\$SCHEME://\$HOST/repository/python-hosted/"
+                                
                                 python3 setup.py sdist bdist_wheel
-                                python3 -m twine upload --repository-url ${NEXUS_URL} --username \$NEXUS_USER --password \$NEXUS_PASS dist/*
+                                python3 -m twine upload --repository-url $INDEX_URL --username \$NEXUS_USER --password \$NEXUS_PASS dist/*
                             """
                         }
                     }
@@ -221,6 +222,15 @@ def call(Map<String, Object> config) {
                                     robotId: "${params.robotId}",
                                     jobName: "${env.SERVICE_NAME}",
                                     reason : "【${env.STAGE_NAME}】失败！"
+                            ])
+                        }
+                    }
+                    success {
+                        script {
+                            dingTalk.post([
+                                    robotId    : "${params.robotId}",
+                                    jobName    : "${env.SERVICE_NAME}",
+                                    sqServerUrl: "${params.sqDashboardUrl}"
                             ])
                         }
                     }
