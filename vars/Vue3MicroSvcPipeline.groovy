@@ -135,8 +135,8 @@ def call(Map<String, Object> config) {
                         fi
 
                         # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
-                        # 若 vitest 版本支持 junit reporter，则以下命令会输出 JUnit XML
-                        npx vitest --run --reporter=junit --outputFile reports/junit.xml || true
+                        # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
+                        npm exec -y vitest -- --run --reporter=junit --outputFile reports/junit.xml || true
     
                         test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                     """
