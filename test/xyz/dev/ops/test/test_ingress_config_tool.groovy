@@ -1,4 +1,6 @@
 #!/usr/bin/env groovy
+package xyz.dev.ops.test
+
 import xyz.dev.ops.deploy.K8sDeployConfigTool
 
 /**
@@ -8,7 +10,7 @@ import xyz.dev.ops.deploy.K8sDeployConfigTool
  * 包括：nginx 配置生成、Ingress paths 生成、模板文件处理等
  *
  * 运行方式：
- * groovy test_ingress_config_tool.groovy
+ * groovy xyz.dev.ops.test.test_ingress_config_tool.groovy
  */
 
 // 模拟 Jenkins script 对象

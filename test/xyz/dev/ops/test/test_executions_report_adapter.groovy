@@ -1,3 +1,5 @@
+package xyz.dev.ops.test
+
 import xyz.dev.ops.adapter.ExecutionsReportAdapter
 
 /**
@@ -11,7 +13,7 @@ import xyz.dev.ops.adapter.ExecutionsReportAdapter
  * - 验证测试用例的基本结构
  * 
  * 运行方式：
- * groovy -cp src test_executions_report_adapter.groovy
+ * groovy -cp src xyz.dev.ops.test.test_executions_report_adapter.groovy
  * 
  * 注意：此脚本需要在项目根目录下运行，以便正确解析类路径
  */

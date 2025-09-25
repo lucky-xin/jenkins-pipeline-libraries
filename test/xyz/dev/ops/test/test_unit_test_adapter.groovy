@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+package xyz.dev.ops.test
 
 import xyz.dev.ops.adapter.LcovUnitTestReportAdapter
 

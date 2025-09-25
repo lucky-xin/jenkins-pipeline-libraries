@@ -1,3 +1,5 @@
+package xyz.dev.ops.test
+
 import xyz.dev.ops.adapter.GolangCoverageReportAdapter
 
 // 测试脚本用于验证 GolangUnitTestReportAdapter 和 GolangCoverageReportAdapter

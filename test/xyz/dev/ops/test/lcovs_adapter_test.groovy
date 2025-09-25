@@ -1,3 +1,5 @@
+package xyz.dev.ops.test
+
 import xyz.dev.ops.adapter.LcovCoverageReportAdapter
 
 /**
@@ -10,7 +12,7 @@ import xyz.dev.ops.adapter.LcovCoverageReportAdapter
  *
  * 使用方法：
  * 1. 确保 coverage.info 文件存在于项目根目录
- * 2. 运行测试：groovy src/xyz/dev/ops/adapter/lcovs_adapter_test.groovy
+ * 2. 运行测试：groovy src/xyz/dev/ops/adapter/xyz.dev.ops.test.lcovs_adapter_test.groovy
  */
 class LcovsToSonarCoverageReportAdapterTest {
 
