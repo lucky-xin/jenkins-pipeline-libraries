@@ -1,6 +1,6 @@
+import xyz.dev.ops.adapter.ExecutionsReportAdapter
 import xyz.dev.ops.deploy.K8sDeployService
 import xyz.dev.ops.notify.DingTalk
-import xyz.dev.ops.adapter.ExecutionsReportAdapter
 
 /**
  * Vue3 微服务前端通用流水线（vars）
@@ -43,7 +43,7 @@ def call(Map<String, Object> config) {
                   sqServerUrl     : config.sqServerUrl ?: "http://172.29.35.103:9000",
                   sqDashboardUrl  : config.sqDashboardUrl ?: "http://8.145.35.103:9000",
                   k8sServerUrl    : config.k8sServerUrl ?: "https://47.107.91.186:6443",
-                  sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:latest",//SonarQube扫描客户端镜像
+                  sqCliImage      : config.sqCliImage ?: "xin8/devops/sonar-scanner-cli:node",//SonarQube扫描客户端镜像
                   k8sDeployImage  : config.k8sDeployImage ?: "bitnami/kubectl:latest",
                   k8sDeployArgs   : config.k8sDeployArgs ?: "-u root:root --entrypoint \"\""]
 
@@ -116,10 +116,10 @@ def call(Map<String, Object> config) {
                             INSTALL_RC=\$?
                             set -e
                             if [ \$INSTALL_RC -ne 0 ]; then
-                            echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
-                            npm config set registry https://registry.npmjs.org
-                            npm cache clean --force || true
-                            npm install --no-audit --no-fund
+                                echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
+                                npm config set registry https://registry.npmjs.org
+                                npm cache clean --force || true
+                                npm install --no-audit --no-fund
                             fi
                             
                             npm run build
@@ -134,8 +134,8 @@ def call(Map<String, Object> config) {
                             test -f coverage/lcov.info && cp coverage/lcov.info reports/lcov.info
                             # 拷贝 html 覆盖率报告
                             if [ -d coverage/html ]; then
-                            rm -rf reports/html && mkdir -p reports/html
-                            cp -r coverage/html/* reports/html/
+                                rm -rf reports/html && mkdir -p reports/html
+                                cp -r coverage/html/* reports/html/
                             fi
 
                             # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
@@ -217,6 +217,7 @@ def call(Map<String, Object> config) {
                                     -Dsonar.sourceEncoding=UTF-8 \
                                     -Dsonar.projectBaseDir=. \
                                     -Dsonar.sources=${params.sourceDir} \
+                                    -Dsonar.tests=${params.testDir} \
                                     -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js,**/coverage/**,**/.nyc_output/** \
                                     -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.typescript.file.suffixes=.ts,.tsx \

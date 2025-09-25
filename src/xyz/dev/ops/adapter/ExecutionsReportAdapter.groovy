@@ -35,13 +35,12 @@ class ExecutionsReportAdapter {
                 // 将 ancestorTitles 合并为 classname；若为空则用文件名去掉路径作为类名
                 def ancestors = (ar?.ancestorTitles instanceof List) ? ar.ancestorTitles : []
                 String classname = ancestors ? ancestors.join('.') : deriveClassNameFromPath(testFile)
-                // vitest/jest duration 通常为毫秒，这里转为秒（decimal）
-                BigDecimal seconds = 0.0
+                // vitest/jest duration 已经是毫秒，直接使用
+                BigDecimal milliseconds = 0.0
                 try {
-                    def dur = (ar?.duration ?: 0) as BigDecimal
-                    seconds = dur.divide(new BigDecimal(1000))
+                    milliseconds = (ar?.duration ?: 0) as BigDecimal
                 } catch (Throwable ignored) {
-                    seconds = 0.0
+                    milliseconds = 0.0
                 }
 
                 String status = (ar?.status ?: '').toString()
@@ -51,7 +50,7 @@ class ExecutionsReportAdapter {
                 testcases << [
                         name     : name,
                         classname: classname,
-                        time     : seconds,
+                        time     : milliseconds,
                         failure  : isFailed ? ((ar?.failureMessages && ar.failureMessages[0]) ?: 'FAILED') : null,
                         error    : null,
                         skipped  : isSkipped ? 'SKIPPED' : null,

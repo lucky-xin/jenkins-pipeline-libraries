@@ -81,7 +81,7 @@ class SonarQubeJUnitXmlReportUtils {
         // 按文件分组测试用例
         def fileGroups = [:]
         testSuiteData.testcases.each { testcase ->
-            def fileName = testcase.testFile ?: "go_test.go" // 使用测试文件信息，默认为 go_test.go
+            def fileName = testcase.testFile // 使用测试文件信息，默认为 go_test.go
             if (!fileGroups.containsKey(fileName)) {
                 fileGroups[fileName] = []
             }
@@ -93,7 +93,7 @@ class SonarQubeJUnitXmlReportUtils {
             xml.append("  <file path=\"${fileName}\">\n")
 
             testCases.each { testcase ->
-                def duration = (testcase.time * 1000) as int // 转换为毫秒
+                def duration = testcase.time as int // duration 已经是毫秒，直接使用
                 def hasFailure = testcase.failure
                 def hasError = testcase.error
                 def hasSkipped = testcase.skipped
