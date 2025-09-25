@@ -14,6 +14,17 @@ package xyz.dev.ops.adapter
  */
 class SonarQubeJUnitXmlReportUtils {
 
+    private static String xmlEscape(Object value) {
+        def s = value?.toString() ?: ''
+        // 注意先替换 & 再替换其他字符，避免二次转义
+        s = s.replace('&', '&amp;')
+        s = s.replace('<', '&lt;')
+        s = s.replace('>', '&gt;')
+        s = s.replace('"', '&quot;')
+        s = s.replace('\'', '&apos;')
+        return s
+    }
+
     /**
      * 生成 JUnit XML 格式的测试报告
      *
@@ -97,9 +108,10 @@ class SonarQubeJUnitXmlReportUtils {
                 def hasFailure = testcase.failure
                 def hasError = testcase.error
                 def hasSkipped = testcase.skipped
+                def escapedName = xmlEscape(testcase.name)
 
                 if (hasFailure || hasError || hasSkipped) {
-                    xml.append("    <testCase name=\"${testcase.name}\" duration=\"${duration}\">\n")
+                    xml.append("    <testCase name=\"${escapedName}\" duration=\"${duration}\">\n")
                     if (hasSkipped) {
                         xml.append("      <skipped/>\n")
                     }
@@ -111,7 +123,7 @@ class SonarQubeJUnitXmlReportUtils {
                     }
                     xml.append("    </testCase>\n")
                 } else {
-                    xml.append("    <testCase name=\"${testcase.name}\" duration=\"${duration}\"/>\n")
+                    xml.append("    <testCase name=\"${escapedName}\" duration=\"${duration}\"/>\n")
                 }
             }
 
