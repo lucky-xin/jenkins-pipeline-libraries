@@ -13,14 +13,14 @@
 
 ### 技术栈支持
 
-| 技术栈        | 流水线脚本                    | 构建环境                             | 部署方式                |
-|------------|--------------------------|----------------------------------|---------------------|
-| **Maven**  | `MavenMicroSvcPipeline`  | `maven:3.9.11-amazoncorretto-17` | Kubernetes + Docker |
-| **Vue3**   | `Vue3MicroSvcPipeline`   | `node:24.6.0-alpine`             | Kubernetes + Nginx  |
-| **Golang** | `GolangMicroSvcPipeline` | `golang:1.25`                    | Kubernetes + Alpine |
-| **Python** | `PythonMicroSvcPipeline` | `xin8/devops/python:latest`      | Kubernetes + Alpine |
-| **Python库** | `PythonLibraryPipeline` | `xin8/devops/python:latest`      | Nexus 仓库            |
-| **C++**    | `CXXLibraryPipeline`     | `xin8/devops/cxx:latest`         | Nexus 仓库            |
+| 技术栈         | 流水线脚本                    | 构建环境                             | 部署方式                |
+|-------------|--------------------------|----------------------------------|---------------------|
+| **Maven**   | `MavenMicroSvcPipeline`  | `maven:3.9.11-amazoncorretto-17` | Kubernetes + Docker |
+| **Vue3**    | `Vue3MicroSvcPipeline`   | `node:24.6.0-alpine`             | Kubernetes + Nginx  |
+| **Golang**  | `GolangMicroSvcPipeline` | `golang:1.25`                    | Kubernetes + Alpine |
+| **Python**  | `PythonMicroSvcPipeline` | `xin8/devops/python:latest`      | Kubernetes + Alpine |
+| **Python库** | `PythonLibraryPipeline`  | `xin8/devops/python:latest`      | Nexus 仓库            |
+| **C++**     | `CXXLibraryPipeline`     | `xin8/devops/cxx:latest`         | Nexus 仓库            |
 
 ### 核心特性
 
@@ -342,10 +342,10 @@ PythonMicroSvcPipeline([
 @Library('jenkins-pipeline-libraries') _
 
 PythonLibraryPipeline([
-        robotId    : 'your-dingtalk-robot-id',
-        svcName    : 'your-python-library',
-        version    : '1.0.0',
-        nexusUrl   : 'http://your-nexus:8081'
+        robotId : 'your-dingtalk-robot-id',
+        svcName : 'your-python-library',
+        version : '1.0.0',
+        nexusUrl: 'http://your-nexus:8081'
 ])
 ```
 
@@ -660,10 +660,10 @@ PythonMicroSvcPipeline([
 @Library('jenkins-pipeline-libraries') _
 
 PythonLibraryPipeline([
-        robotId    : 'your-dingtalk-robot-id',
-        svcName    : 'python-common-utils',
-        version    : '1.0.0',
-        nexusUrl   : 'http://your-nexus:8081'
+        robotId : 'your-dingtalk-robot-id',
+        svcName : 'python-common-utils',
+        version : '1.0.0',
+        nexusUrl: 'http://your-nexus:8081'
 ])
 ```
 

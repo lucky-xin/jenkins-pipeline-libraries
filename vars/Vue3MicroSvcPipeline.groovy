@@ -109,19 +109,7 @@ def call(Map<String, Object> config) {
                             npm config set registry https://registry.npmmirror.com
                             npm config set cache /root/.npm
                             npm config set prefer-offline true
-        
-                            # 优先使用国内镜像源安装，若出现 ETARGET（镜像缺版本）则回退官方源重试
-                            set +e
                             npm install --no-audit --no-fund
-                            INSTALL_RC=\$?
-                            set -e
-                            if [ \$INSTALL_RC -ne 0 ]; then
-                                echo "首次 npm install 失败，尝试切换到官方源重试（可能是镜像缺少某些版本，如 lru-cache）。"
-                                npm config set registry https://registry.npmjs.org
-                                npm cache clean --force || true
-                                npm install --no-audit --no-fund
-                            fi
-                            
                             npm run build
                             
                             # 运行单元测试并生成覆盖率 (lcov/html)
@@ -219,8 +207,8 @@ def call(Map<String, Object> config) {
                                     -Dsonar.sources=${params.sourceDir} \
                                     -Dsonar.tests=${params.testDir} \
                                     -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.min.js,**/coverage/**,**/.nyc_output/** \
-                                    -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.typescript.file.suffixes=.ts,.tsx \
+                                    -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.javascript.lcov.reportPaths=reports/lcov.info \
                                     -Dsonar.testExecutionReportPaths=reports/test-results.xml
                             """
