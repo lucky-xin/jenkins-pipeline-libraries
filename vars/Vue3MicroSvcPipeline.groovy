@@ -206,7 +206,7 @@ def call(Map<String, Object> config) {
                                     -Dsonar.projectBaseDir=. \
                                     -Dsonar.sources=${params.sourceDir} \
                                     -Dsonar.tests=${params.testDir} \
-                                    -Dsonar.exclusions=**/assets/**,**/enums/**,**/views/**,**/layouts/**,**/*.d.ts,**/index.ts \
+                                    -Dsonar.exclusions=**/assets/**,**/enums/**,**/views/**,**/layouts/**,**/*.d.ts,**/index.ts,**/typing.ts \
                                     -Dsonar.typescript.file.suffixes=.ts,.tsx \
                                     -Dsonar.javascript.file.suffixes=.js,.jsx,.vue \
                                     -Dsonar.javascript.lcov.reportPaths=reports/lcov.info \
