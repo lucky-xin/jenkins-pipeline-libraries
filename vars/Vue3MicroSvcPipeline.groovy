@@ -129,6 +129,7 @@ def call(Map<String, Object> config) {
                             # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
                             # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
                             npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json
+                            echo "生成 JUnit 测试报告成功"
 
                             # 将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空，避免泄露路径并缩短报告
                             if [ -f reports/test-results.json ]; then
