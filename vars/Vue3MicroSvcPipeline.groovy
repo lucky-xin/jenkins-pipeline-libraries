@@ -139,7 +139,7 @@ def call(Map<String, Object> config) {
                             echo "判断dist目录是否存在"
                             test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                         """
-
+                        echo '开始转换测试报告...'
                         def res = ExecutionsReportAdapter.convert(
                                 "${WORKSPACE}/reports/test-results.json",
                                 "${WORKSPACE}/reports/test-results.xml"
