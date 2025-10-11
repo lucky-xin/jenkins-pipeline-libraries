@@ -348,9 +348,9 @@ def call(Map<String, Object> config) {
             }
         } //stages
 
-//        post {
-//            always { cleanWs() }
-//        }
+        post {
+            always { cleanWs() }
+        }
     } //pipeline
 }
 
