@@ -132,9 +132,10 @@ def call(Map<String, Object> config) {
 
                             # 将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空，避免泄露路径并缩短报告
                             if [ -f reports/test-results.json ]; then
+                              echo "将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空"
                               sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
                             fi
-        
+                            echo "判断dist目录是否存在"
                             test -d dist && ls -la dist || (echo "构建产物 dist 不存在" && exit 1)
                         """
 
