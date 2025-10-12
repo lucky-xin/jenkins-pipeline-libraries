@@ -149,7 +149,7 @@ def call(Map<String, Object> config) {
                             echo "开始生成 JUnit 测试报告..."
                             
                             # 设置超时时间（5分钟）并运行 vitest，添加性能优化参数
-                            if timeout 300 npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json --no-coverage --no-watch --no-ui --threads=2 --maxConcurrency=2; then
+                            if npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json --no-coverage --no-watch --no-ui --maxWorkers=2 --testTimeout=30000; then
                                 echo "生成 JUnit 测试报告成功"
                                 
                                 # 将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空，避免泄露路径并缩短报告
@@ -158,24 +158,8 @@ def call(Map<String, Object> config) {
                                     sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
                                 fi
                             else
-                                # 检查是否是超时错误（退出码124）
-                                if [ \$? -eq 124 ]; then
-                                    echo "JUnit 测试报告生成超时（5分钟），尝试运行简化测试..."
-                                    # 尝试运行更简单的测试命令
-                                    if timeout 60 npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json --no-coverage --no-watch --no-ui --threads=1 --maxConcurrency=1 --testTimeout=10000; then
-                                        echo "简化测试执行成功"
-                                        if [ -f reports/test-results.json ]; then
-                                            echo "将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空"
-                                            sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
-                                        fi
-                                    else
-                                        echo "简化测试也失败，创建空的测试结果文件"
-                                        echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
-                                    fi
-                                else
-                                    echo "JUnit 测试报告生成失败，创建空的测试结果文件"
-                                    echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
-                                fi
+                                echo "JUnit 测试报告生成失败，创建空的测试结果文件"
+                                echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
                             fi
                             
                             echo "判断dist目录是否存在"
