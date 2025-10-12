@@ -144,17 +144,11 @@ def call(Map<String, Object> config) {
                               echo "将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空"
                               sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
                             fi
+                            
                             echo "判断dist目录是否存在"
                             if [ -d dist ]; then
                                 echo "构建产物 dist 目录存在"
                                 ls -la dist
-                            else
-                                echo "警告: 构建产物 dist 目录不存在，检查构建是否成功"
-                                echo "当前目录内容:"
-                                ls -la
-                                echo "检查是否有其他构建输出目录:"
-                                find . -maxdepth 2 -type d -name "*dist*" -o -name "*build*" -o -name "*output*" || true
-                                # 不强制退出，让后续步骤继续执行
                             fi
                         """
                         echo '开始转换测试报告...'
@@ -207,18 +201,6 @@ def call(Map<String, Object> config) {
                                 echo '开始执行 SonarQube 代码扫描...'
                                 echo '当前工作目录:'
                                 pwd
-                                
-                                # 若容器内缺少 Node.js，尝试按发行版安装（支持 apk/apt/yum）
-                                if ! command -v node >/dev/null 2>&1; then
-                                  echo 'Node.js 不存在，开始安装...'
-                                  if command -v apk >/dev/null 2>&1; then
-                                    apk add --no-cache nodejs npm
-                                  elif command -v apt-get >/dev/null 2>&1; then
-                                    apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
-                                  elif command -v yum >/dev/null 2>&1; then
-                                    yum install -y nodejs npm || true
-                                  fi
-                                fi
 
                                 echo 'node -v'; node -v || true
                                 echo 'npm -v'; npm -v || true
