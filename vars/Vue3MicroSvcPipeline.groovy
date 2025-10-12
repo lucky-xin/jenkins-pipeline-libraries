@@ -158,8 +158,8 @@ def call(Map<String, Object> config) {
                                     sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
                                 fi
                             else
-                                exit_code=\$?
-                                if [ $exit_code -eq 124 ]; then
+                                # 检查是否是超时错误（退出码124）
+                                if [ \$? -eq 124 ]; then
                                     echo "JUnit 测试报告生成超时（5分钟），尝试运行简化测试..."
                                     # 尝试运行更简单的测试命令
                                     if timeout 60 npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json --no-coverage --no-watch --no-ui --threads=1 --maxConcurrency=1 --testTimeout=10000; then
@@ -173,7 +173,7 @@ def call(Map<String, Object> config) {
                                         echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
                                     fi
                                 else
-                                    echo "JUnit 测试报告生成失败（退出码: $exit_code），创建空的测试结果文件"
+                                    echo "JUnit 测试报告生成失败，创建空的测试结果文件"
                                     echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
                                 fi
                             fi
