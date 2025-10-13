@@ -117,21 +117,10 @@ def call(Map<String, Object> config) {
                             npm run build
                             
                             echo "构建完成，检查构建结果..."
-                            echo "当前目录内容:"
-                            ls -la
-                            
-                            # 生成 reports 目录
-                            mkdir -p reports
-                            
+
                             # 运行单元测试并生成覆盖率 (lcov/html) - 允许失败
                             echo "开始运行单元测试和覆盖率检查..."
                             npm run test:coverage || true
-                             
-                            echo "判断dist目录是否存在"
-                            if [ -d dist ]; then
-                                echo "构建产物 dist 目录存在"
-                                ls -la dist
-                            fi
                         """
                         echo '开始转换测试报告...'
                         def res = [total: 0]
