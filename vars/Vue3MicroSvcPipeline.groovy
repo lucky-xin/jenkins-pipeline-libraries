@@ -125,7 +125,7 @@ def call(Map<String, Object> config) {
                             
                             # 运行单元测试并生成覆盖率 (lcov/html) - 允许失败
                             echo "开始运行单元测试和覆盖率检查..."
-                            vitest run --reporter=json --outputFile=reports/test-results.json --no-watch --coverage --maxWorkers=8 --testTimeout=30000 --pool=threads --poolOptions.threads.maxThreads=8 || true       
+                            npx vitest run --reporter=json --outputFile=reports/test-results.json --no-watch --coverage --maxWorkers=8 --testTimeout=30000 --pool=threads --poolOptions.threads.maxThreads=8 || true       
  
                             echo "判断dist目录是否存在"
                             if [ -d dist ]; then
