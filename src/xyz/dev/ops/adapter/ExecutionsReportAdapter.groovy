@@ -51,7 +51,7 @@ class ExecutionsReportAdapter {
                         name     : name,
                         classname: classname,
                         time     : milliseconds,
-                        failure  : isFailed ? ((ar?.failureMessages && ar.failureMessages[0]) ?: 'FAILED') : null,
+                        failure  : isFailed ? ((ar?.failureMessages && ar.failureMessages[0 as String]) ?: 'FAILED') : null,
                         error    : null,
                         skipped  : isSkipped ? 'SKIPPED' : null,
                         testFile : testFile ?: (classname ? classname + '.test' : 'test.spec')

@@ -125,43 +125,8 @@ def call(Map<String, Object> config) {
                             
                             # 运行单元测试并生成覆盖率 (lcov/html) - 允许失败
                             echo "开始运行单元测试和覆盖率检查..."
-                            if npm run test:coverage --silent; then
-                                echo "单元测试和覆盖率检查成功"
-                                
-                                # 拷贝覆盖率报告
-                                if [ -f coverage/lcov.info ]; then
-                                    cp coverage/lcov.info reports/lcov.info
-                                    echo "覆盖率报告已复制到 reports/lcov.info"
-                                fi
-                                
-                                # 拷贝 html 覆盖率报告
-                                if [ -d coverage/html ]; then
-                                    rm -rf reports/html && mkdir -p reports/html
-                                    cp -r coverage/html/* reports/html/
-                                    echo "HTML覆盖率报告已复制到 reports/html/"
-                                fi
-                            else
-                                echo "单元测试或覆盖率检查失败，继续执行后续步骤"
-                            fi
-
-                            # 生成 JUnit 测试报告（供 Jenkins JUnit 插件识别）
-                            # 使用 npm exec 调用 vitest，避免镜像中缺少 npx 的问题
-                            echo "开始生成 JUnit 测试报告..."
-                            
-                            # 设置超时时间（5分钟）并运行 vitest，添加性能优化参数
-                            if npm run test:fast; then
-                                echo "生成 JUnit 测试报告成功"
-                                
-                                # 将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空，避免泄露路径并缩短报告
-                                if [ -f reports/test-results.json ]; then
-                                    echo "将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空"
-                                    sed -i "s#${WORKSPACE}/##g" reports/test-results.json || true
-                                fi
-                            else
-                                echo "JUnit 测试报告生成失败，创建空的测试结果文件"
-                                echo '{"total": 0, "passed": 0, "failed": 0, "skipped": 0}' > reports/test-results.json
-                            fi
-                            
+                            vitest run --reporter=json --outputFile=reports/test-results.json --no-watch --coverage --maxWorkers=8 --testTimeout=30000 --pool=threads --poolOptions.threads.maxThreads=8 || true       
+ 
                             echo "判断dist目录是否存在"
                             if [ -d dist ]; then
                                 echo "构建产物 dist 目录存在"
