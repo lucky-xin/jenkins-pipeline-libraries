@@ -149,7 +149,7 @@ def call(Map<String, Object> config) {
                             echo "开始生成 JUnit 测试报告..."
                             
                             # 设置超时时间（5分钟）并运行 vitest，添加性能优化参数
-                            if npm exec -y vitest -- --run --reporter=json --outputFile reports/test-results.json --no-coverage --no-watch --no-ui --maxWorkers=2 --testTimeout=30000; then
+                            if npm run test:fast; then
                                 echo "生成 JUnit 测试报告成功"
                                 
                                 # 将 reports/test-results.json 中的绝对路径 ${WORKSPACE} 替换为空，避免泄露路径并缩短报告
@@ -169,23 +169,16 @@ def call(Map<String, Object> config) {
                             fi
                         """
                         echo '开始转换测试报告...'
-                        def res = [:]
-                        try {
-                            // 检查测试结果文件是否存在
-                            if (fileExists("${WORKSPACE}/reports/test-results.json")) {
-                                res = ExecutionsReportAdapter.convert(
-                                        "${WORKSPACE}/reports/test-results.json",
-                                        "${WORKSPACE}/reports/test-results.xml"
-                                )
-                                echo "测试报告转换成功"
-                            }
-                        } catch (Exception e) {
-                            echo "测试报告转换失败: ${e.getMessage()}"
-                            echo "检查测试结果文件是否存在:"
-                            sh "ls -la reports/ || true"
-                            // 创建空的测试结果文件，避免后续步骤失败
-                            res = [total: 0]
+                        def res = [total: 0]
+                        // 检查测试结果文件是否存在
+                        if (fileExists("${WORKSPACE}/reports/test-results.json")) {
+                            res = ExecutionsReportAdapter.convert(
+                                    "${WORKSPACE}/reports/test-results.json",
+                                    "${WORKSPACE}/reports/test-results.xml"
+                            )
+                            echo "测试报告转换成功"
                         }
+
                         sh """
                             echo "total=${res.total}"
 
