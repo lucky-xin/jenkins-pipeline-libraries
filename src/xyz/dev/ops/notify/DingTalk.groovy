@@ -51,24 +51,24 @@ def post(Map<String, Object> config) {
     ]
 
     def changeString = CreateMsg()
-//    dingtalk(
-//            robot: params.robotId,
-//            type: 'MARKDOWN',
-//            title: params.title,
-//            text: [
-//                    "# [<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'}>${params.jobName}</font>](${env.RUN_DISPLAY_URL})",
-//                    "------",
-//                    "- 任务名称：${env.JOB_NAME}",
-//                    "- 任务状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'}>${currentBuild.currentResult}</font>",
-//                    params.reason.isEmpty() ? "" : "- 失败原因：" + params.reason,
-//                    params.sqServerUrl.isEmpty() ? "" : "- 质量报告：[点击查看详情](${params.sqServerUrl}/dashboard?id=${params.jobName})",
-//                    "- 构建日志：[点击查看详情](${env.BUILD_URL}console)",
-//                    "- 执行用户：${currentBuild.buildCauses.shortDescription}",
-//                    "### 更新记录:",
-//                    "${changeString}"
-//            ],
-//            // at: [
-//            //     '电话号码'
-//            // ]
-//    )
+    dingtalk(
+            robot: params.robotId,
+            type: 'MARKDOWN',
+            title: params.title,
+            text: [
+                    "# [<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'}>${params.jobName}</font>](${env.RUN_DISPLAY_URL})",
+                    "------",
+                    "- 任务名称：${env.JOB_NAME}",
+                    "- 任务状态：<font color=${currentBuild.currentResult == 'SUCCESS' ? '#00EE76' : '#EE0000'}>${currentBuild.currentResult}</font>",
+                    params.reason.isEmpty() ? "" : "- 失败原因：" + params.reason,
+                    params.sqServerUrl.isEmpty() ? "" : "- 质量报告：[点击查看详情](${params.sqServerUrl}/dashboard?id=${params.jobName})",
+                    "- 构建日志：[点击查看详情](${env.BUILD_URL}console)",
+                    "- 执行用户：${currentBuild.buildCauses.shortDescription}",
+                    "### 更新记录:",
+                    "${changeString}"
+            ],
+            // at: [
+            //     '电话号码'
+            // ]
+    )
 } 
