@@ -133,6 +133,7 @@ def call(Map<String, Object> config) {
                         echo '处理 coverage.out 文件，移除 MODULE_NAME 前缀'
                         sed -i "s|\$MODULE_NAME/||g" reports/coverage.out
                         
+                        echo 'cat reports/coverage.out'
                         cat reports/coverage.out
 
                         echo '编译二进制文件'
@@ -286,8 +287,8 @@ def call(Map<String, Object> config) {
                 }
             }
         } //stages
-        post {
-            always { cleanWs() }
-        }
+//        post {
+//            always { cleanWs() }
+//        }
     }
 }
