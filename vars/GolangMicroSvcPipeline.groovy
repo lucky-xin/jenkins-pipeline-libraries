@@ -127,10 +127,13 @@ def call(Map<String, Object> config) {
                         go test -v -json -coverprofile=reports/coverage.out -coverpkg=\$PACKAGES ./test/... > reports/test-suite-report.txt
 
                         MODULE_NAME=\$(go list -m)
+                        echo 'MODULE_NAME='\$MODULE_NAME
 
                         # 处理 coverage.out 文件，移除 MODULE_NAME 前缀
                         echo '处理 coverage.out 文件，移除 MODULE_NAME 前缀'
                         sed -i "s|\$MODULE_NAME/||g" reports/coverage.out
+                        
+                        cat reports/coverage.out
 
                         echo '编译二进制文件'
                         go build -ldflags="-w -s" -o main ${params.mainFilePath}
